@@ -8,18 +8,11 @@ export default function DatenschutzPage() {
         Datenschutzerklärung
       </h1>
 
-      <div className="panel p-6 sm:p-8 flex flex-col gap-6 text-sm leading-relaxed text-muted">
-        <p className="bg-accent-soft text-accent-foreground rounded-lg px-4 py-3">
-          <strong>Hinweis:</strong> Dies ist eine Platzhalter-Fassung. Sie muss
-          vor einer öffentlichen Bewerbung der Seite durch eine rechtsgültige
-          Erklärung ersetzt werden.
-        </p>
-
         <div>
           <strong className="text-foreground block mb-1">
             1. Verantwortliche Stelle
           </strong>
-          [Firmenname], [Anschrift], [E-Mail-Adresse]
+          infokiglossar@duck.com
         </div>
 
         <div>
@@ -34,18 +27,9 @@ export default function DatenschutzPage() {
           umkehrbaren Prüfwert deiner IP-Adresse, um massenhaftes automatisiertes
           Einsenden zu unterbinden; die IP-Adresse selbst wird nicht gespeichert.
           Rechtsgrundlage ist unser berechtigtes Interesse an einem
-          funktionsfähigen, missbrauchssicheren Angebot.
+          funktionsfähigen, missbrauchssicheren Informationsangebot.
         </div>
-
-        <div>
-          <strong className="text-foreground block mb-1">
-            3. Redaktionszugang
-          </strong>
-          Für die Redaktion besteht ein passwortgeschützter Zugang. Dabei werden
-          E-Mail-Adresse und ein verschlüsseltes Passwort gespeichert. Eine
-          öffentliche Registrierung gibt es nicht.
-        </div>
-
+        
         <div>
           <strong className="text-foreground block mb-1">
             4. Hosting und Auftragsverarbeitung
