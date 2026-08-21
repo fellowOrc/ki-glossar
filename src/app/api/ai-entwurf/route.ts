@@ -55,8 +55,16 @@ function extractJson(text: string): unknown | null {
   return null;
 }
 
+// Claude fuegt bei Websuche-gestuetzten Antworten manchmal automatisch
+// Zitat-Markup wie <cite index="1-2">...</cite> in den Fliesstext ein, auch
+// wenn das JSON-Feld eigentlich nur reiner Text sein soll. Wird hier entfernt,
+// der eingeschlossene Text bleibt erhalten.
+function stripCitationTags(value: string): string {
+  return value.replace(/<\/?cite[^>]*>/gi, "");
+}
+
 function asString(value: unknown): string {
-  return typeof value === "string" ? value.trim() : "";
+  return typeof value === "string" ? stripCitationTags(value).trim() : "";
 }
 
 function hostOf(url: string): string | null {
@@ -155,6 +163,8 @@ Antworte zum Schluss mit genau einem JSON-Objekt in einem \`\`\`json-Codeblock:
 
 QUELLEN (wichtig): Verwende ausschliesslich URLs, die die Websuche geliefert hat. Erfinde nie URL, Titel, Autor oder Jahr. Kannst du ein Feld nicht belegen, schreibe einen leeren String. Zwei belastbare Quellen sind besser als vier unsichere.
 
+FORMAT (wichtig): Die Textfelder ("short_explanation", "definition", "business_relevance") enthalten reinen Fliesstext ohne Markup. Fuege keine Zitat-Tags wie <cite>...</cite> oder aehnliche Markierungen ein - die Quellenzuordnung geschieht ausschliesslich ueber das separate "sources"-Feld.
+
 KATEGORIEN
 ${categoryLines}
 
@@ -163,7 +173,7 @@ ${termLines}`;
 
         const anthropicStream = anthropic.messages.stream({
           model: "claude-sonnet-4-5",
-          max_tokens: 4096,
+          max_tokens: 8192,
           system: systemPrompt,
           tools: [
             {
