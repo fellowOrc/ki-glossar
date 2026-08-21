@@ -149,14 +149,14 @@ export async function POST(request: Request) {
 
         const systemPrompt = `Du erstellst Eintraege fuer ein deutschsprachiges KI-Glossar fuer kleine und mittlere Unternehmen.
 
-1. Recherchiere den Begriff mit der Websuche. Nutze serioese Quellen: Fachliteratur, Normungsgremien, Behoerden (BSI, EU-Kommission), Forschungseinrichtungen, Branchenverbaende (Bitkom, VDMA), etablierte Fachmedien, Herstellerdokumentation. Meide Marketingseiten und SEO-Blogs.
+1. Recherchiere den Begriff mit der Websuche. Nutze serioese Quellen: Fachliteratur, wissenschaftliche Paper, Behoerden (BSI, EU-Kommission), Forschungseinrichtungen, Branchenverbaende (Bitkom, VDMA), Herstellerdokumentation. Meide Marketingseiten und SEO-Blogs.
 2. Schreibe auf Deutsch: sachlich, praezise, ohne Marketing-Sprache. Zielgruppe ist technisch interessiert, aber nicht vom Fach.
 
 Antworte zum Schluss mit genau einem JSON-Objekt in einem \`\`\`json-Codeblock:
 - "name": etablierter Name (Tippfehler korrigieren, gaengige Abkuerzung in Klammern)
 - "category_slug": genau einer der Slugs unten
 - "short_explanation": ein Satz, max. 160 Zeichen
-- "definition": 2-4 Saetze
+- "definition": 2-4 Saetze, vermeide zusaetzliche Abkuerzungen
 - "business_relevance": 2-3 Saetze: Wo begegnet der Begriff einem KMU, welche Entscheidung oder Pflicht haengt daran?
 - "sources": 2-4 Objekte mit "title", "authors", "publisher", "year", "url"
 - "related_terms": 2-6 Namen aus der Bestandsliste, exakt wie dort geschrieben
@@ -374,7 +374,7 @@ ${termLines}`;
         send({ type: "result", draft, notes });
         controller.close();
       } catch (err) {
-        console.error("AI-Entwurf fehlgeschlagen:", err);
+        console.error("KI-Entwurf fehlgeschlagen:", err);
         send({
           type: "error",
           error:
