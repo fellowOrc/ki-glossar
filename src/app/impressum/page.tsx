@@ -7,36 +7,22 @@ export default function ImpressumPage() {
       <h1 className="text-3xl font-semibold tracking-tight mb-6">Impressum</h1>
       <div className="panel p-6 sm:p-8 flex flex-col gap-5 text-sm leading-relaxed text-muted">
         <p>
-          <strong className="text-foreground">
-            Angaben gemäß § 5 TMG (Platzhalter)
-          </strong>
+          <strong className="text-foreground">Angaben gemäß § 5 TMG (Platzhalter)</strong>
           <br />
-          [Firmenname]
+          Marcel Jäger
           <br />
-          [Straße, Hausnummer]
+          Boeckhstrasse 15
           <br />
-          [PLZ, Ort]
+          76137 Karlsruhe
         </p>
         <p>
           <strong className="text-foreground">Kontakt</strong>
           <br />
-          Telefon: [Telefonnummer]
-          <br />
-          E-Mail: [E-Mail-Adresse]
-        </p>
-        <p>
-          <strong className="text-foreground">
-            Vertretungsberechtigt / Registereintrag
-          </strong>
-          <br />
-          [Name der vertretungsberechtigten Person]
-          <br />
-          [Registergericht, Registernummer, USt-IdNr.]
+          E-Mail: infokiglossar@duck.com
         </p>
         <p className="text-xs">
-          Dies ist ein Platzhalter-Impressum und muss vor Veröffentlichung
-          durch die tatsächlichen rechtlich erforderlichen Angaben ersetzt
-          werden.
+          <strong>Haftung für Inhalte</strong>
+Die Inhalte dieses KI-Glossars wurden mit größter Sorgfalt erstellt. Das Angebot dient ausschließlich informativen, nicht-kommerziellen Zwecken. Für die Richtigkeit, Vollständigkeit und Aktualität der bereitgestellten Informationen wird keine Gewähr übernommen.
         </p>
       </div>
     </div>
