@@ -1,0 +1,215 @@
+@import "tailwindcss";
+
+/* Jede Farbe steht genau einmal da: light-dark() liefert je nach aktivem
+   Farbschema den ersten oder zweiten Wert. Gesteuert wird das über
+   color-scheme – per Systemeinstellung oder über die Wahl am Umschalter. */
+:root {
+  color-scheme: light dark;
+
+  --bg: light-dark(#fbfaf7, #14181f);
+  --bg-alt: light-dark(#f3f0e9, #1a1f28);
+  --surface: light-dark(#ffffff, #1c222b);
+  --surface-soft: light-dark(#f4f2ed, #232a35);
+  --fg: light-dark(#1b2430, #e8eaed);
+  --muted: light-dark(#5d6875, #9aa5b3);
+  --border: light-dark(#e7e3da, #2c3542);
+  --border-strong: light-dark(#d5cfc2, #3d4856);
+
+  --primary: light-dark(#2b6098, #6ea8dd);
+  --primary-hover: light-dark(#24507f, #8bbce8);
+  --primary-fg: light-dark(#ffffff, #10151c);
+  --primary-soft: light-dark(#e9f0f8, #1e2b3a);
+
+  --accent: light-dark(#e0a020, #e6b34a);
+  --accent-soft: light-dark(#fdf4e0, #2e2718);
+  --accent-fg: light-dark(#4a3306, #f6e5bd);
+
+  --danger: light-dark(#b23b2e, #e08076);
+  --danger-soft: light-dark(#fbecea, #33201e);
+
+  /* Ein Farbton je Kategorie. Sie tragen den lebendigen Eindruck und helfen
+     zugleich beim Scannen: die Kategorie erkennt man am Farbton, nicht erst
+     am Text. */
+  --kat-grundlagen: light-dark(#2f6f9e, #7db3d8);
+  --kat-grundlagen-soft: light-dark(#e6f0f7, #1c2833);
+  --kat-generative: light-dark(#6b4fa8, #a894dd);
+  --kat-generative-soft: light-dark(#efe9f8, #241f33);
+  --kat-einsatz: light-dark(#1f7a5f, #63bfa0);
+  --kat-einsatz-soft: light-dark(#e2f2ec, #172b26);
+  --kat-trends: light-dark(#c4741a, #e0ad5c);
+  --kat-trends-soft: light-dark(#fbeedb, #2f2417);
+  --kat-recht: light-dark(#a8434c, #dd8b93);
+  --kat-recht-soft: light-dark(#f9e8ea, #331e21);
+
+  --shadow-card: light-dark(
+    0 1px 2px rgb(27 36 48 / 0.04),
+    0 1px 2px rgb(0 0 0 / 0.3)
+  );
+  --shadow-lift: light-dark(
+    0 2px 4px rgb(27 36 48 / 0.06),
+    0 2px 4px rgb(0 0 0 / 0.35)
+  );
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-alt: var(--bg-alt);
+  --color-surface: var(--surface);
+  --color-surface-soft: var(--surface-soft);
+  --color-foreground: var(--fg);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-fg);
+  --color-primary-soft: var(--primary-soft);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-foreground: var(--accent-fg);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Courier New", monospace;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { letter-spacing: -0.011em; }
+
+/* Kategoriefarbe wird per data-Attribut gesetzt und vererbt sich an alle
+   Kindelemente, die auf --kat zugreifen. */
+[data-kat="grundlagen-technologie"] { --kat: var(--kat-grundlagen); --kat-soft: var(--kat-grundlagen-soft); }
+[data-kat="generative-ki-sprachmodelle"] { --kat: var(--kat-generative); --kat-soft: var(--kat-generative-soft); }
+[data-kat="ki-unternehmenseinsatz"] { --kat: var(--kat-einsatz); --kat-soft: var(--kat-einsatz-soft); }
+[data-kat="aktuelle-trends"] { --kat: var(--kat-trends); --kat-soft: var(--kat-trends-soft); }
+[data-kat="recht-ethik-sicherheit"] { --kat: var(--kat-recht); --kat-soft: var(--kat-recht-soft); }
+
+.eyebrow {
+  font-size: 0.75rem; font-weight: 600; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--primary);
+}
+
+.eyebrow-muted {
+  font-size: 0.75rem; font-weight: 600; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--muted);
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-card);
+}
+
+.card-link {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+/* Farbiger Streifen in der Kategoriefarbe an der linken Kante. */
+.card-link::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--kat, var(--primary));
+}
+
+.card-link:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+  border-color: var(--kat, var(--border-strong));
+}
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 0.5rem; border-radius: 0.5rem; font-weight: 600; font-size: 0.9375rem;
+  padding: 0.625rem 1.125rem; cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.btn-primary { background: var(--primary); color: var(--primary-fg); }
+.btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+
+.btn-secondary {
+  background: var(--surface); color: var(--fg);
+  border: 1px solid var(--border-strong);
+}
+.btn-secondary:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+
+.btn-danger {
+  background: transparent; color: var(--danger); border: 1px solid var(--danger);
+}
+.btn-danger:hover:not(:disabled) { background: var(--danger-soft); }
+
+.btn-quiet { background: transparent; color: var(--muted); font-weight: 500; }
+.btn-quiet:hover:not(:disabled) { color: var(--primary); }
+
+.field {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 0.5rem;
+  padding: 0.625rem 0.875rem;
+  font-size: 1rem;
+  color: var(--fg);
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.field:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+.field::placeholder { color: var(--muted); opacity: 0.7; }
+
+.chip {
+  display: inline-flex; align-items: center; border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  padding: 0.3125rem 0.75rem; font-size: 0.8125rem; font-weight: 500;
+  color: var(--muted); background: var(--surface);
+  transition: all 140ms ease; cursor: pointer;
+}
+
+.chip:hover { border-color: var(--kat, var(--primary)); color: var(--kat, var(--primary)); }
+
+.chip-active {
+  background: var(--kat, var(--primary));
+  border-color: var(--kat, var(--primary));
+  color: var(--primary-fg);
+}
+.chip-active:hover { color: var(--primary-fg); }
+
+.badge {
+  display: inline-flex; align-items: center; border-radius: 999px;
+  padding: 0.1875rem 0.625rem; font-size: 0.75rem; font-weight: 600;
+}
+
+.badge-kat { background: var(--kat-soft, var(--primary-soft)); color: var(--kat, var(--primary)); }
+
+.prose-block { white-space: pre-wrap; line-height: 1.72; }
