@@ -1,9 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { LogoutButton } from "@/components/logout-button";
-import { IdleLogout } from "@/components/idle-logout";
 import { getRolle } from "@/lib/rollen";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { HeaderNav } from "@/components/header-nav";
 
 export async function SiteHeader() {
   const supabase = await createClient();
@@ -29,39 +27,12 @@ export async function SiteHeader() {
                 KI-Glossar
               </span>
               <span className="text-[11px] text-muted">
-                für Interessierte
+                für den Mittelstand
               </span>
             </span>
           </Link>
 
-          <nav className="flex items-center gap-2 sm:gap-3">
-            <Link href="/quiz" className="btn btn-secondary">
-              Teste dein Wissen!
-            </Link>
-            <ThemeToggle />
-
-            {user ? (
-              <>
-                {istRedaktion && (
-                  <Link
-                    href="/redaktion"
-                    className="text-sm text-muted hover:text-foreground transition-colors px-2 py-1"
-                  >
-                    Redaktion
-                  </Link>
-                )}
-                <Link href="/neuer-begriff" className="btn btn-secondary">
-                  Neuen Begriff vorschlagen
-                </Link>
-                <LogoutButton />
-                <IdleLogout />
-              </>
-            ) : (
-              <Link href="/vorschlag" className="btn btn-primary">
-                Neuen Begriff vorschlagen
-              </Link>
-            )}
-          </nav>
+          <HeaderNav eingeloggt={!!user} istRedaktion={istRedaktion} />
         </div>
       </div>
     </header>
