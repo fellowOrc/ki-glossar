@@ -55,7 +55,7 @@ export async function SiteHeader() {
               </>
             ) : (
               <Link href="/vorschlag" className="btn btn-primary">
-                Begriff vorschlagen
+                Neuen Begriff vorschlagen
               </Link>
             )}
           </nav>
