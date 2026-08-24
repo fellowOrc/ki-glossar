@@ -18,7 +18,7 @@ export default async function VorschlagPage({
     <div className="mx-auto max-w-2xl px-4 sm:px-6 py-12 sm:py-16">
       <p className="eyebrow mb-3">Mitmachen</p>
       <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight mb-4">
-        Einen Begriff vorschlagen
+        Neuen Begriff vorschlagen
       </h1>
       <p className="text-lg text-muted mb-8 leading-relaxed">
         Dir ist ein KI-Begriff begegnet, den du hier vermisst? Sag uns Bescheid
