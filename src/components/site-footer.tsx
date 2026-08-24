@@ -5,9 +5,9 @@ export function SiteFooter() {
     <footer className="border-t border-border bg-surface-soft mt-20">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 py-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
-          <p className="font-semibold text-sm">KI-Glossar für den Mittelstand</p>
+          <p className="font-semibold text-sm">KI-Glossar für Interessierte</p>
           <p className="text-sm text-muted mt-1">
-            Ein Nachschlagewerk für KI-Begriffe, verständlich erklärt.
+            KI-Begriffe - Erklärt. Verknüpft. 
           </p>
         </div>
         <nav className="flex flex-wrap gap-6 text-sm">
@@ -15,7 +15,7 @@ export function SiteFooter() {
             href="/vorschlag"
             className="text-muted hover:text-primary transition-colors"
           >
-            Begriff vorschlagen
+            Neuen Begriff vorschlagen
           </Link>
           <Link
             href="/impressum"
@@ -33,7 +33,7 @@ export function SiteFooter() {
       </div>
       <div className="mx-auto max-w-6xl px-4 sm:px-6 pb-8">
         <p className="text-xs text-muted">
-          &copy; {new Date().getFullYear()} KI-Glossar für den Mittelstand
+          &copy; {new Date().getFullYear()} KI-Glossar für Interessierte
         </p>
       </div>
     </footer>
