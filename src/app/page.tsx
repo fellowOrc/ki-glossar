@@ -31,11 +31,6 @@ export default async function HomePage() {
           Begriffe rund um künstliche Intelligenz – kompakt erklärt, mit konkretem Bezug zur betrieblichen Praxis im Mittelstand und nützlichen
           Quellenangaben.
         </p>
-        <div className="flex flex-wrap items-center gap-4 mt-7">
-          <Link href="/vorschlag" className="btn btn-primary">
-            Neuen Begriff vorschlagen
-          </Link>
-        </div>
       </section>
 
       <div id="begriffe" className="scroll-mt-20">
