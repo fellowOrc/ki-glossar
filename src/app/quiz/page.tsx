@@ -52,12 +52,26 @@ function grundformen(begriffsname: string): string[] {
   return [...formen];
 }
 
+// Manche Beschreibungen erklären den Begriff zusätzlich mit einer
+// Übersetzung oder einem Synonym in Klammern, z. B. "Reinforcement Learning
+// (auch: Bestärkendes Lernen) …" oder "Deepfake (engl. für tiefgehende
+// Fälschung) …". Diese Klammerinhalte verraten die Antwort, obwohl sie
+// textlich nichts mit dem Begriffsnamen gemeinsam haben und daher von
+// grundformen() gar nicht erfasst werden können. Deshalb wird der Inhalt
+// hinter solchen Markern grundsätzlich verdeckt, unabhängig vom Begriff.
+function verdeckeAliasKlammern(text: string): string {
+  return text.replace(
+    /\((auch(?:\s+bekannt\s+als)?|synonym|dt\.?|deutsch|engl\.?|englisch|zu\s+deutsch)\s*:?\s*([^)]+)\)/gi,
+    (_match, marker: string) => `(${marker}: ▉▉▉▉▉)`
+  );
+}
+
 // Ersetzt jede Wortform aus grundformen() im Beschreibungstext durch einen
 // Platzhalter. Ein optionales Plural-Suffix (Token→Tokens, Chatbot→Chatbots,
 // Agent→Agenten, Modell→Modelle …) sorgt dafür, dass auch gebeugte Formen
 // erfasst werden. Sonst würde die Frage den gesuchten Begriff verraten.
 function redigiere(text: string, begriffsname: string): string {
-  let ergebnis = text;
+  let ergebnis = verdeckeAliasKlammern(text);
   for (const form of grundformen(begriffsname)) {
     const escaped = form.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const regex = new RegExp(
@@ -83,9 +97,9 @@ export default async function QuizPage() {
   if (pool.length < OPTIONEN_ANZAHL) {
     return (
       <div className="mx-auto max-w-2xl px-4 sm:px-6 py-16">
-        <p className="eyebrow mb-3">Teste dein Wissen!</p>
+        <p className="eyebrow mb-3">Teste dein Wissen</p>
         <h1 className="text-3xl font-semibold tracking-tight mb-4">
-          Noch nicht genug Begriffe für „Teste dein Wissen!“
+          Noch nicht genug Begriffe für „Teste dein Wissen“
         </h1>
         <p className="text-muted">
           Dafür braucht es mindestens {OPTIONEN_ANZAHL} veröffentlichte
@@ -118,9 +132,9 @@ export default async function QuizPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 sm:px-6 py-16">
-      <p className="eyebrow mb-3">Teste dein Wissen!</p>
+      <p className="eyebrow mb-3">Teste dein Wissen</p>
       <h1 className="text-3xl font-semibold tracking-tight mb-6">
-        Wie fit ist dein KI-Wissen? Finde es heraus!
+        Wie fit bist du in KI-Begriffen?
       </h1>
       <QuizClient fragen={fragen} />
     </div>
