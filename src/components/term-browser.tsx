@@ -102,26 +102,28 @@ export function TermBrowser({
         ))}
       </div>
 
-      <div className="sticky top-16 z-30 bg-bg/95 backdrop-blur-sm border-y border-border py-2.5 mb-10 flex flex-wrap gap-0.5">
-        {[...ALPHABET, "#"].map((letter) => {
-          const available = availableLetters.has(letter);
-          return available ? (
-            <a
-              key={letter}
-              href={`#letter-${letter}`}
-              className="w-7 h-7 flex items-center justify-center text-sm font-medium rounded-md text-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
-            >
-              {letter}
-            </a>
-          ) : (
-            <span
-              key={letter}
-              className="w-7 h-7 flex items-center justify-center text-sm text-muted/35"
-            >
-              {letter}
-            </span>
-          );
-        })}
+      <div className="sticky top-16 z-30 bg-bg/95 backdrop-blur-sm border-y border-border mb-10 -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div className="flex flex-nowrap sm:flex-wrap gap-0.5 py-2.5 overflow-x-auto sm:overflow-visible">
+          {[...ALPHABET, "#"].map((letter) => {
+            const available = availableLetters.has(letter);
+            return available ? (
+              <a
+                key={letter}
+                href={`#letter-${letter}`}
+                className="w-7 h-7 flex shrink-0 items-center justify-center text-sm font-medium rounded-md text-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
+              >
+                {letter}
+              </a>
+            ) : (
+              <span
+                key={letter}
+                className="w-7 h-7 flex shrink-0 items-center justify-center text-sm text-muted/35"
+              >
+                {letter}
+              </span>
+            );
+          })}
+        </div>
       </div>
 
       {filtered.length === 0 ? (
