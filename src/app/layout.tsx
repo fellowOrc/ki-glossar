@@ -13,7 +13,7 @@ import { SiteFooter } from "@/components/site-footer";
 export const metadata: Metadata = {
   title: "KI-Glossar für den Mittelstand",
   description:
-    "Interaktives Nachschlagewerk für KI-Begriffe – verständlich erklärt für kleine und mittlere Unternehmen.",
+    "Nachschlagewerk für KI-Begriffe - mit Quellen und praktischen Hinweisen",
 };
 
 // Laeuft vor dem ersten Rendern, damit die Seite nicht kurz in der falschen
