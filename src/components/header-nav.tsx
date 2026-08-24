@@ -49,10 +49,10 @@ export function HeaderNav({
                 Redaktion
               </Link>
             )}
+            <LogoutButton />
             <Link href="/neuer-begriff" className="btn btn-secondary">
               Neuer Begriff
             </Link>
-            <LogoutButton />
             <IdleLogout />
           </>
         ) : (
@@ -128,6 +128,9 @@ export function HeaderNav({
                     Redaktion
                   </Link>
                 )}
+                <div className="flex justify-start">
+                  <LogoutButton />
+                </div>
                 <Link
                   href="/neuer-begriff"
                   onClick={() => setOffen(false)}
@@ -135,9 +138,6 @@ export function HeaderNav({
                 >
                   Neuer Begriff
                 </Link>
-                <div className="flex justify-start">
-                  <LogoutButton />
-                </div>
                 <IdleLogout />
               </>
             ) : (
