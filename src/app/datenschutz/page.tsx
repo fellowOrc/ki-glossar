@@ -8,6 +8,7 @@ export default function DatenschutzPage() {
         Datenschutzerklärung
       </h1>
 
+      <div className="panel p-6 sm:p-8 flex flex-col gap-6 text-sm leading-relaxed text-muted">
         <div>
           <strong className="text-foreground block mb-1">
             1. Verantwortliche Stelle
@@ -29,7 +30,7 @@ export default function DatenschutzPage() {
           Rechtsgrundlage ist unser berechtigtes Interesse an einem
           funktionsfähigen, missbrauchssicheren Informationsangebot.
         </div>
-        
+
         <div>
           <strong className="text-foreground block mb-1">
             4. Hosting und Auftragsverarbeitung
@@ -51,5 +52,6 @@ export default function DatenschutzPage() {
           oben genannte Adresse.
         </div>
       </div>
+    </div>
   );
 }
