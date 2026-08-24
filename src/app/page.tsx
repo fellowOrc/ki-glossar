@@ -34,7 +34,7 @@ export default async function HomePage() {
         </p>
         <div className="flex flex-wrap items-center gap-4 mt-7">
           <Link href="/vorschlag" className="btn btn-primary">
-            Begriff vorschlagen
+            Neuen Begriff vorschlagen
           </Link>
         </div>
       </section>
