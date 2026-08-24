@@ -51,6 +51,5 @@ export default function DatenschutzPage() {
           oben genannte Adresse.
         </div>
       </div>
-    </div>
   );
 }
