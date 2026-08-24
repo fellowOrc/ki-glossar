@@ -29,14 +29,14 @@ export async function SiteHeader() {
                 KI-Glossar
               </span>
               <span className="text-[11px] text-muted">
-                für den Mittelstand
+                für Interessierte
               </span>
             </span>
           </Link>
 
           <nav className="flex items-center gap-2 sm:gap-3">
             <Link href="/quiz" className="btn btn-secondary">
-              Teste dein Wissen
+              Teste dein Wissen!
             </Link>
             <ThemeToggle />
 
@@ -51,14 +51,14 @@ export async function SiteHeader() {
                   </Link>
                 )}
                 <Link href="/neuer-begriff" className="btn btn-secondary">
-                  Neuer Begriff
+                  Neuen Begriff vorschlagen
                 </Link>
                 <LogoutButton />
                 <IdleLogout />
               </>
             ) : (
               <Link href="/vorschlag" className="btn btn-primary">
-                Begriff vorschlagen
+                Neuen Begriff vorschlagen
               </Link>
             )}
           </nav>
