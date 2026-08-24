@@ -34,10 +34,10 @@ export function HeaderNav({
     <>
       {/* Volle Navigation ab md */}
       <nav className="hidden md:flex items-center gap-2 sm:gap-3">
+        <ThemeToggle />
         <Link href="/quiz" className="btn btn-secondary">
           Teste dein Wissen
         </Link>
-        <ThemeToggle />
 
         {eingeloggt ? (
           <>
