@@ -83,9 +83,9 @@ export default async function QuizPage() {
   if (pool.length < OPTIONEN_ANZAHL) {
     return (
       <div className="mx-auto max-w-2xl px-4 sm:px-6 py-16">
-        <p className="eyebrow mb-3">Teste dein Wissen</p>
+        <p className="eyebrow mb-3">Teste dein Wissen!</p>
         <h1 className="text-3xl font-semibold tracking-tight mb-4">
-          Noch nicht genug Begriffe für „Teste dein Wissen“
+          Noch nicht genug Begriffe für „Teste dein Wissen!“
         </h1>
         <p className="text-muted">
           Dafür braucht es mindestens {OPTIONEN_ANZAHL} veröffentlichte
@@ -118,9 +118,9 @@ export default async function QuizPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 sm:px-6 py-16">
-      <p className="eyebrow mb-3">Teste dein Wissen</p>
+      <p className="eyebrow mb-3">Teste dein Wissen!</p>
       <h1 className="text-3xl font-semibold tracking-tight mb-6">
-        Wie fit bist du in KI-Begriffen?
+        Wie fit ist dein KI-Wissen? Finde es heraus!
       </h1>
       <QuizClient fragen={fragen} />
     </div>
