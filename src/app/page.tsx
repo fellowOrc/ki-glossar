@@ -24,12 +24,11 @@ export default async function HomePage() {
       <section className="mb-14">
         <p className="eyebrow mb-3">Nachschlagewerk</p>
         <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight max-w-3xl leading-[1.15]">
-          KI-Begriffe - Erklärt. Verknüpft.
+          KI-Begriffe - Verstehen. Einordnen. Anwenden.
         </h1>
         <p className="text-lg text-muted mt-5 max-w-2xl leading-relaxed">
           Von "Agentic AI" bis "Zero-Shot Learning": {termList.length} zentrale
-          Begriffe rund um künstliche Intelligenz – kompakt erklärt, mit konkretem Bezug zur betrieblichen Praxis im Mittelstand und nützlichen
-          Quellenangaben.
+          Begriffe rund um künstliche Intelligenz – Kompakte Erklärungen mit echtem Praxisbezug und vertiefenden Quellen.
         </p>
       </section>
 
