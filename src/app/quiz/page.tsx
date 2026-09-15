@@ -87,7 +87,7 @@ export default async function QuizPage() {
   const supabase = await createClient();
   const { data: terms } = await supabase
     .from("terms")
-    .select("id, name, short_explanation, definition")
+    .select("id, slug, name, short_explanation, definition")
     .eq("status", "published");
 
   const pool = (terms ?? []).filter(
@@ -127,6 +127,9 @@ export default async function QuizPage() {
       beschreibung,
       optionen: shuffle([term.name, ...andereNamen]),
       richtigeAntwort: term.name,
+      // Für die Auswertung: von jeder falsch beantworteten Frage führt ein
+      // Link direkt zum passenden Glossareintrag.
+      slug: term.slug,
     };
   });
 
