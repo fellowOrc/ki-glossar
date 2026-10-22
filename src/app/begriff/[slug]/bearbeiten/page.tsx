@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getRolle } from "@/lib/rollen";
 import { TermEditForm } from "@/components/term-edit-form";
-import type { Category, Term, TermStatus } from "@/types/database";
+import type { Category, TermRef, TermStatus } from "@/types/database";
 
 export const dynamic = "force-dynamic";
 
@@ -90,7 +90,7 @@ export default async function BearbeitenPage({
         status={term.status as TermStatus}
         start={start}
         categories={kategorien}
-        existingTerms={(alleBegriffe ?? []) as Pick<Term, "id" | "slug" | "name">[]}
+        existingTerms={(alleBegriffe ?? []) as TermRef[]}
       />
     </div>
   );

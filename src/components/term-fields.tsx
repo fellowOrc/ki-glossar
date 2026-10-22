@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { slugify } from "@/lib/slugify";
-import type { Category, Term } from "@/types/database";
+import type { Category, TermRef } from "@/types/database";
 
 export type SourceRow = {
   title: string;
@@ -57,7 +57,7 @@ export function TermFields({
   draft: TermDraft;
   onChange: (patch: Partial<TermDraft>) => void;
   categories: Category[];
-  existingTerms: Pick<Term, "id" | "slug" | "name">[];
+  existingTerms: TermRef[];
   slugTouched: boolean;
   onSlugTouched: () => void;
 }) {

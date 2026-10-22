@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
 import { extractJson } from "@/lib/server/json";
 import { KI_MODELL, textAusAntwort } from "@/lib/server/anthropic";
+import type { ModerationVerdict } from "@/lib/moderation";
 
 export const maxDuration = 30;
 export const dynamic = "force-dynamic";
@@ -9,12 +10,6 @@ export const dynamic = "force-dynamic";
 // Die Einschaetzung blockiert nie, sie legt der Redaktion nur vor. In die
 // Datenbank schreiben darf das Urteil ausschliesslich die Redaktion - die
 // RLS-Policy verbietet Mitgliedern das Setzen dieser Felder.
-
-export type ModerationVerdict = {
-  topic: "ki_bezug" | "unklar" | "themenfremd";
-  concern: "keine" | "pruefen" | "erheblich";
-  reasoning: string;
-};
 
 const FALLBACK: ModerationVerdict = {
   topic: "unklar",

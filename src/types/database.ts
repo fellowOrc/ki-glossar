@@ -54,3 +54,8 @@ export type TermRelation = {
 export type TermWithCategory = Term & {
   category: Category | null;
 };
+
+// Kurzform eines Begriffs, wie sie Auswahllisten und Verknüpfungen brauchen.
+export type TermRef = Pick<Term, "id" | "slug" | "name">;
+
+export type SuggestionStatus = "neu" | "uebernommen" | "abgelehnt";

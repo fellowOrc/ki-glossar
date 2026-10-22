@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { NewTermForm } from "@/components/new-term-form";
 import { getRolle } from "@/lib/rollen";
-import type { Category, Term } from "@/types/database";
+import type { Category, TermRef } from "@/types/database";
 
 export const metadata = { title: "Neuer Begriff – KI-Glossar" };
 export const dynamic = "force-dynamic";
@@ -46,7 +46,7 @@ export default async function NeuerBegriffPage({
       </p>
       <NewTermForm
         categories={(categories ?? []) as Category[]}
-        existingTerms={(terms ?? []) as Pick<Term, "id" | "slug" | "name">[]}
+        existingTerms={(terms ?? []) as TermRef[]}
         vorbelegterBegriff={begriff ?? ""}
         vorschlagId={vorschlag ?? null}
       />

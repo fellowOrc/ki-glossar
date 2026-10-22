@@ -18,7 +18,8 @@ import {
   type SourceRow,
   type TermDraft,
 } from "@/components/term-fields";
-import type { Category, Term } from "@/types/database";
+import type { ModerationVerdict } from "@/lib/moderation";
+import type { Category, TermRef } from "@/types/database";
 
 type Step = "input" | "generating" | "review";
 
@@ -56,12 +57,6 @@ function writeStoredDraft(value: string | null) {
   window.dispatchEvent(new Event(DRAFT_CHANGED_EVENT));
 }
 
-type Verdict = {
-  topic: "ki_bezug" | "unklar" | "themenfremd";
-  concern: "keine" | "pruefen" | "erheblich";
-  reasoning: string;
-};
-
 export function NewTermForm({
   categories,
   existingTerms,
@@ -69,7 +64,7 @@ export function NewTermForm({
   vorschlagId = null,
 }: {
   categories: Category[];
-  existingTerms: Pick<Term, "id" | "slug" | "name">[];
+  existingTerms: TermRef[];
   vorbelegterBegriff?: string;
   vorschlagId?: string | null;
 }) {
@@ -82,7 +77,7 @@ export function NewTermForm({
   const [phaseLabel, setPhaseLabel] = useState("");
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiNotes, setAiNotes] = useState<string[]>([]);
-  const [verdict, setVerdict] = useState<Verdict | null>(null);
+  const [verdict, setVerdict] = useState<ModerationVerdict | null>(null);
   const [checking, setChecking] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -298,7 +293,7 @@ export function NewTermForm({
         }),
       });
       const data = await res.json();
-      if (res.ok && data.verdict) setVerdict(data.verdict as Verdict);
+      if (res.ok && data.verdict) setVerdict(data.verdict as ModerationVerdict);
     } catch {
       // bewusst ignoriert
     } finally {

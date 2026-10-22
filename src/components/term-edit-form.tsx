@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { TermFields, type TermDraft } from "@/components/term-fields";
-import type { Category, Term, TermStatus } from "@/types/database";
+import type { Category, TermRef, TermStatus } from "@/types/database";
 
 export function TermEditForm({
   termId,
@@ -20,7 +20,7 @@ export function TermEditForm({
   status: TermStatus;
   start: TermDraft;
   categories: Category[];
-  existingTerms: Pick<Term, "id" | "slug" | "name">[];
+  existingTerms: TermRef[];
 }) {
   const router = useRouter();
   const [draft, setDraft] = useState<TermDraft>(start);

@@ -3,13 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import type { SuggestionStatus } from "@/types/database";
 
 export type Suggestion = {
   id: string;
   term_name: string;
   note: string | null;
   contact_email: string | null;
-  status: "neu" | "uebernommen" | "abgelehnt";
+  status: SuggestionStatus;
   created_at: string;
 };
 
@@ -34,7 +35,7 @@ export function SuggestionList({
 
   async function setzeStatus(
     s: Suggestion,
-    status: "uebernommen" | "abgelehnt" | "neu"
+    status: SuggestionStatus
   ) {
     setBusyId(s.id);
     setError(null);

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import type { ModerationStatus } from "@/types/database";
 
 export type ReviewTerm = {
   id: string;
@@ -14,7 +15,7 @@ export type ReviewTerm = {
   business_relevance: string | null;
   created_at: string;
   created_by: string | null;
-  moderation_status: "unchecked" | "ok" | "flagged";
+  moderation_status: ModerationStatus;
   moderation_notes: string | null;
   moderation_checked_at: string | null;
   category: { name: string } | null;
