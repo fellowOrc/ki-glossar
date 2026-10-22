@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Hinweis } from "@/components/hinweis";
+import { LoeschenMitRueckfrage } from "@/components/loeschen-mit-rueckfrage";
 import type { SuggestionStatus } from "@/types/database";
 import { formatDatum } from "@/lib/format";
 
@@ -166,14 +167,12 @@ export function SuggestionList({
                   Wieder öffnen
                 </button>
               )}
-              <button
-                type="button"
+              <LoeschenMitRueckfrage
                 disabled={busy}
-                onClick={() => loeschen(s)}
-                className="btn btn-quiet"
-              >
-                {busy ? "…" : "Löschen"}
-              </button>
+                laeuft={busy}
+                frage="Vorschlag wirklich unwiderruflich löschen?"
+                onLoeschen={() => loeschen(s)}
+              />
             </div>
           </article>
         );

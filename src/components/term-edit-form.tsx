@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { TermFields } from "@/components/term-fields";
 import { Hinweis } from "@/components/hinweis";
+import { LoeschenMitRueckfrage } from "@/components/loeschen-mit-rueckfrage";
 import {
   istDoppelterSlug,
   istSpeicherbar,
@@ -39,7 +40,6 @@ export function TermEditForm({
   );
   const [error, setError] = useState<string | null>(null);
   const [hinweis, setHinweis] = useState<string | null>(null);
-  const [loeschAbfrage, setLoeschAbfrage] = useState(false);
 
   function updateDraft(patch: Partial<TermDraft>) {
     setDraft((prev) => ({ ...prev, ...patch }));
@@ -208,36 +208,12 @@ export function TermEditForm({
             Zur Redaktion
           </Link>
           <span className="flex-1" />
-          {loeschAbfrage ? (
-            <span className="flex flex-wrap items-center gap-3">
-              <span className="text-sm text-danger">
-                Wirklich unwiderruflich löschen?
-              </span>
-              <button
-                type="button"
-                disabled={busy !== null}
-                onClick={loeschen}
-                className="btn btn-danger"
-              >
-                {busy === "loeschen" ? "Lösche …" : "Ja, löschen"}
-              </button>
-              <button
-                type="button"
-                onClick={() => setLoeschAbfrage(false)}
-                className="btn btn-quiet"
-              >
-                Abbrechen
-              </button>
-            </span>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setLoeschAbfrage(true)}
-              className="btn btn-quiet"
-            >
-              Begriff löschen
-            </button>
-          )}
+          <LoeschenMitRueckfrage
+            disabled={busy !== null}
+            laeuft={busy === "loeschen"}
+            beschriftung="Begriff löschen"
+            onLoeschen={loeschen}
+          />
         </div>
       </form>
     </div>

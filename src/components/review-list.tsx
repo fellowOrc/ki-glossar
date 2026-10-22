@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Hinweis } from "@/components/hinweis";
+import { LoeschenMitRueckfrage } from "@/components/loeschen-mit-rueckfrage";
 import type { ModerationStatus } from "@/types/database";
 import { formatDatum } from "@/lib/format";
 
@@ -173,14 +174,12 @@ export function ReviewList({
               >
                 Prüfen und bearbeiten
               </Link>
-              <button
-                type="button"
+              <LoeschenMitRueckfrage
                 disabled={busy}
-                onClick={() => remove(term)}
-                className="btn btn-quiet"
-              >
-                Löschen
-              </button>
+                laeuft={busy}
+                frage="Entwurf wirklich unwiderruflich löschen?"
+                onLoeschen={() => remove(term)}
+              />
             </div>
           </article>
         );
