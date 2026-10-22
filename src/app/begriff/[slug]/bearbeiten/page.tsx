@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getRolle } from "@/lib/rollen";
 import { TermEditForm } from "@/components/term-edit-form";
+import { entwurfAusBestand } from "@/lib/term-draft";
 import type { Category, TermRef, TermStatus } from "@/types/database";
 
 export const dynamic = "force-dynamic";
@@ -54,22 +55,12 @@ export default async function BearbeitenPage({
 
   const kategorien = (categories ?? []) as Category[];
 
-  const start = {
-    name: term.name ?? "",
-    slug: term.slug ?? "",
-    categoryId: term.category_id ?? kategorien[0]?.id ?? "",
-    shortExplanation: term.short_explanation ?? "",
-    definition: term.definition ?? "",
-    businessRelevance: term.business_relevance ?? "",
-    sources: (sources ?? []).map((s) => ({
-      title: s.title ?? "",
-      authors: s.authors ?? "",
-      publisher: s.publisher ?? "",
-      year: s.year ? String(s.year) : "",
-      url: s.url ?? "",
-    })),
-    relatedIds: (relations ?? []).map((r) => r.related_term_id as string),
-  };
+  const start = entwurfAusBestand(
+    term,
+    sources ?? [],
+    (relations ?? []).map((r) => r.related_term_id as string),
+    kategorien
+  );
 
   return (
     <div className="mx-auto max-w-3xl px-4 sm:px-6 py-12">

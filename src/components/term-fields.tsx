@@ -2,47 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { slugify } from "@/lib/slugify";
+import { emptySource, type SourceRow, type TermDraft } from "@/lib/term-draft";
 import type { Category, TermRef } from "@/types/database";
-
-export type SourceRow = {
-  title: string;
-  authors: string;
-  publisher: string;
-  year: string;
-  url: string;
-};
-
-export type TermDraft = {
-  name: string;
-  slug: string;
-  categoryId: string;
-  shortExplanation: string;
-  definition: string;
-  businessRelevance: string;
-  sources: SourceRow[];
-  relatedIds: string[];
-};
-
-export const emptySource: SourceRow = {
-  title: "",
-  authors: "",
-  publisher: "",
-  year: "",
-  url: "",
-};
-
-export function leererEntwurf(categories: Category[], name = ""): TermDraft {
-  return {
-    name,
-    slug: slugify(name),
-    categoryId: categories[0]?.id ?? "",
-    shortExplanation: "",
-    definition: "",
-    businessRelevance: "",
-    sources: [{ ...emptySource }],
-    relatedIds: [],
-  };
-}
 
 // Alle Eingabefelder eines Eintrags an einer Stelle. Wird beim Anlegen und
 // beim Bearbeiten verwendet, damit beide Wege dieselben Felder anbieten.

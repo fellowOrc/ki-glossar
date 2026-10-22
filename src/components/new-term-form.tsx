@@ -11,13 +11,18 @@ import {
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { setAiBusy } from "@/lib/ai-busy";
+import { TermFields } from "@/components/term-fields";
 import {
-  TermFields,
-  emptySource,
+  entwurfAusKi,
+  istDoppelterSlug,
+  istSpeicherbar,
   leererEntwurf,
+  quellZeilen,
+  relationsPaare,
+  termSpalten,
   type SourceRow,
   type TermDraft,
-} from "@/components/term-fields";
+} from "@/lib/term-draft";
 import type { ModerationVerdict } from "@/lib/moderation";
 import type { Category, TermRef } from "@/types/database";
 
@@ -220,17 +225,7 @@ export function NewTermForm({
             setStep("input");
             finished = true;
           } else if (event.type === "result" && event.draft) {
-            const d = event.draft;
-            setDraft({
-              name: d.name,
-              slug: d.slug,
-              categoryId: d.categoryId ?? categories[0]?.id ?? "",
-              shortExplanation: d.shortExplanation,
-              definition: d.definition,
-              businessRelevance: d.businessRelevance,
-              sources: d.sources.length > 0 ? d.sources : [{ ...emptySource }],
-              relatedIds: d.relatedTermIds,
-            });
+            setDraft(entwurfAusKi(event.draft, categories));
             setAiNotes(event.notes ?? []);
             setSlugTouched(true);
             setStep("review");
@@ -272,7 +267,7 @@ export function NewTermForm({
     e.preventDefault();
     if (!draft) return;
 
-    if (!draft.name.trim() || !draft.slug.trim()) {
+    if (!istSpeicherbar(draft)) {
       setSubmitError("Begriff und URL-Slug sind erforderlich.");
       return;
     }
@@ -316,12 +311,7 @@ export function NewTermForm({
     const { data: term, error: termError } = await supabase
       .from("terms")
       .insert({
-        name: draft.name.trim(),
-        slug: draft.slug.trim(),
-        category_id: draft.categoryId || null,
-        short_explanation: draft.shortExplanation.trim() || null,
-        definition: draft.definition.trim() || null,
-        business_relevance: draft.businessRelevance.trim() || null,
+        ...termSpalten(draft),
         status: "published",
         created_by: user.id,
       })
@@ -330,7 +320,7 @@ export function NewTermForm({
 
     if (termError || !term) {
       setSubmitError(
-        termError?.message.includes("duplicate")
+        istDoppelterSlug(termError)
           ? "Ein Begriff mit diesem Slug existiert bereits. Bitte den Slug anpassen."
           : termError?.message ?? "Begriff konnte nicht gespeichert werden."
       );
@@ -338,27 +328,15 @@ export function NewTermForm({
       return;
     }
 
-    const validSources = draft.sources.filter((s) => s.title.trim());
-    if (validSources.length > 0) {
-      await supabase.from("sources").insert(
-        validSources.map((s) => ({
-          term_id: term.id,
-          title: s.title.trim(),
-          authors: s.authors.trim() || null,
-          publisher: s.publisher.trim() || null,
-          year: s.year ? parseInt(s.year, 10) : null,
-          url: s.url.trim() || null,
-        }))
-      );
+    const quellen = quellZeilen(term.id, draft.sources);
+    if (quellen.length > 0) {
+      await supabase.from("sources").insert(quellen);
     }
 
     if (draft.relatedIds.length > 0) {
-      await supabase.from("term_relations").insert(
-        draft.relatedIds.flatMap((relatedId) => [
-          { term_id: term.id, related_term_id: relatedId },
-          { term_id: relatedId, related_term_id: term.id },
-        ])
-      );
+      await supabase
+        .from("term_relations")
+        .insert(relationsPaare(term.id, draft.relatedIds));
     }
 
     if (vorschlagId) {

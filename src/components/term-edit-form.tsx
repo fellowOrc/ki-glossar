@@ -4,7 +4,15 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { TermFields, type TermDraft } from "@/components/term-fields";
+import { TermFields } from "@/components/term-fields";
+import {
+  istDoppelterSlug,
+  istSpeicherbar,
+  quellZeilen,
+  relationsPaare,
+  termSpalten,
+  type TermDraft,
+} from "@/lib/term-draft";
 import type { Category, TermRef, TermStatus } from "@/types/database";
 
 export function TermEditForm({
@@ -38,7 +46,7 @@ export function TermEditForm({
   }
 
   async function speichern(neuerStatus?: TermStatus) {
-    if (!draft.name.trim() || !draft.slug.trim()) {
+    if (!istSpeicherbar(draft)) {
       setError("Begriff und URL-Slug sind erforderlich.");
       return;
     }
@@ -52,19 +60,14 @@ export function TermEditForm({
     const { error: termError } = await supabase
       .from("terms")
       .update({
-        name: draft.name.trim(),
-        slug: draft.slug.trim(),
-        category_id: draft.categoryId || null,
-        short_explanation: draft.shortExplanation.trim() || null,
-        definition: draft.definition.trim() || null,
-        business_relevance: draft.businessRelevance.trim() || null,
+        ...termSpalten(draft),
         ...(neuerStatus ? { status: neuerStatus } : {}),
       })
       .eq("id", termId);
 
     if (termError) {
       setError(
-        termError.message.includes("duplicate")
+        istDoppelterSlug(termError)
           ? "Ein anderer Begriff nutzt diesen Slug bereits."
           : termError.message
       );
@@ -73,18 +76,11 @@ export function TermEditForm({
     }
 
     await supabase.from("sources").delete().eq("term_id", termId);
-    const gueltigeQuellen = draft.sources.filter((s) => s.title.trim());
+    const gueltigeQuellen = quellZeilen(termId, draft.sources);
     if (gueltigeQuellen.length > 0) {
-      const { error: quellenFehler } = await supabase.from("sources").insert(
-        gueltigeQuellen.map((s) => ({
-          term_id: termId,
-          title: s.title.trim(),
-          authors: s.authors.trim() || null,
-          publisher: s.publisher.trim() || null,
-          year: s.year ? parseInt(s.year, 10) : null,
-          url: s.url.trim() || null,
-        }))
-      );
+      const { error: quellenFehler } = await supabase
+        .from("sources")
+        .insert(gueltigeQuellen);
       if (quellenFehler) {
         setError(`Quellen konnten nicht gespeichert werden: ${quellenFehler.message}`);
         setBusy(null);
@@ -95,12 +91,9 @@ export function TermEditForm({
     await supabase.from("term_relations").delete().eq("term_id", termId);
     await supabase.from("term_relations").delete().eq("related_term_id", termId);
     if (draft.relatedIds.length > 0) {
-      await supabase.from("term_relations").insert(
-        draft.relatedIds.flatMap((id) => [
-          { term_id: termId, related_term_id: id },
-          { term_id: id, related_term_id: termId },
-        ])
-      );
+      await supabase
+        .from("term_relations")
+        .insert(relationsPaare(termId, draft.relatedIds));
     }
 
     setBusy(null);
