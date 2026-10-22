@@ -4,6 +4,7 @@ import { Suspense, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { Hinweis } from "@/components/hinweis";
 
 function LoginForm() {
   const router = useRouter();
@@ -43,9 +44,7 @@ function LoginForm() {
       <h1 className="text-2xl font-semibold tracking-tight mb-6">Anmelden</h1>
 
       {hinweis && (
-        <p className="text-sm text-danger bg-danger-soft border border-danger/30 rounded-lg px-4 py-3 mb-5">
-          {hinweis}
-        </p>
+        <Hinweis className="mb-5">{hinweis}</Hinweis>
       )}
 
       <form onSubmit={handleSubmit} className="panel p-6 flex flex-col gap-5">
@@ -73,9 +72,7 @@ function LoginForm() {
         </label>
 
         {error && (
-          <p className="text-sm text-danger bg-danger-soft border border-danger/30 rounded-lg px-4 py-3">
-            {error}
-          </p>
+          <Hinweis>{error}</Hinweis>
         )}
 
         <button type="submit" disabled={loading} className="btn btn-primary">

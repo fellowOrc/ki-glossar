@@ -3,13 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
-export type QuizFrage = {
-  beschreibung: string;
-  optionen: string[];
-  richtigeAntwort: string;
-  slug: string;
-};
+import type { QuizFrage } from "@/lib/quiz";
 
 type Schritt = "intro" | "spielt" | "ergebnis";
 

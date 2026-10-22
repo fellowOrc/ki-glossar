@@ -1,5 +1,6 @@
-import { createHash } from "node:crypto";
 import { createClient } from "@/lib/supabase/server";
+import { ABSENDER_PRAEFIX, hashAbsender } from "@/lib/server/absender";
+import { istMengenbegrenzung } from "@/lib/server/datenbank-fehler";
 
 export const dynamic = "force-dynamic";
 
@@ -7,17 +8,6 @@ export const dynamic = "force-dynamic";
 // halten einfache Bots ab. Die eigentliche Mengenbegrenzung sitzt als Trigger
 // in der Datenbank: hier waere sie wirkungslos (anonyme Besucher duerfen die
 // Tabelle nicht lesen) und umgehbar, indem jemand das Formular ueberspringt.
-
-function hashAbsender(request: Request): string | null {
-  const forwarded =
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    request.headers.get("x-real-ip")?.trim();
-  if (!forwarded) return null;
-  return createHash("sha256")
-    .update(`ki-glossar:${forwarded}`)
-    .digest("hex")
-    .slice(0, 32);
-}
 
 export async function POST(request: Request) {
   let body: {
@@ -69,7 +59,7 @@ export async function POST(request: Request) {
   }
 
   const supabase = await createClient();
-  const ipHash = hashAbsender(request);
+  const ipHash = hashAbsender(request, ABSENDER_PRAEFIX.vorschlag);
 
   const { error } = await supabase.from("suggestions").insert({
     term_name: termName,
@@ -79,7 +69,7 @@ export async function POST(request: Request) {
   });
 
   if (error) {
-    if (error.code === "23514" || /zu viele/i.test(error.message)) {
+    if (istMengenbegrenzung(error)) {
       return Response.json(
         {
           error:

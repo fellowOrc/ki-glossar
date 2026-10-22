@@ -1,66 +1,29 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  useSyncExternalStore,
-} from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { setAiBusy } from "@/lib/ai-busy";
+import { leseNdjson } from "@/lib/ndjson";
+import { useGespeicherterEntwurf } from "@/hooks/use-gespeicherter-entwurf";
+import { TermFields } from "@/components/term-fields";
+import { Hinweis } from "@/components/hinweis";
+import { RechercheFortschritt } from "@/components/recherche-fortschritt";
 import {
-  TermFields,
-  emptySource,
+  entwurfAusKi,
+  istDoppelterSlug,
+  istSpeicherbar,
   leererEntwurf,
-  type SourceRow,
+  quellZeilen,
+  relationsPaare,
+  termSpalten,
   type TermDraft,
-} from "@/components/term-fields";
-import type { Category, Term } from "@/types/database";
+} from "@/lib/term-draft";
+import type { EmpfangenesEreignis } from "@/lib/ai-entwurf/typen";
+import type { ModerationVerdict } from "@/lib/moderation";
+import type { Category, TermRef } from "@/types/database";
 
 type Step = "input" | "generating" | "review";
-
-const DRAFT_STORAGE_KEY = "ki-glossar:entwurf";
-const DRAFT_CHANGED_EVENT = "ki-glossar:entwurf-geaendert";
-
-function subscribeToStoredDraft(onChange: () => void) {
-  window.addEventListener(DRAFT_CHANGED_EVENT, onChange);
-  window.addEventListener("storage", onChange);
-  return () => {
-    window.removeEventListener(DRAFT_CHANGED_EVENT, onChange);
-    window.removeEventListener("storage", onChange);
-  };
-}
-
-function readStoredDraft(): string | null {
-  try {
-    return sessionStorage.getItem(DRAFT_STORAGE_KEY);
-  } catch {
-    return null;
-  }
-}
-
-function storedDraftServerSnapshot(): string | null {
-  return null;
-}
-
-function writeStoredDraft(value: string | null) {
-  try {
-    if (value === null) sessionStorage.removeItem(DRAFT_STORAGE_KEY);
-    else sessionStorage.setItem(DRAFT_STORAGE_KEY, value);
-  } catch {
-      // bewusst ignoriert
-    }
-  window.dispatchEvent(new Event(DRAFT_CHANGED_EVENT));
-}
-
-type Verdict = {
-  topic: "ki_bezug" | "unklar" | "themenfremd";
-  concern: "keine" | "pruefen" | "erheblich";
-  reasoning: string;
-};
 
 export function NewTermForm({
   categories,
@@ -69,7 +32,7 @@ export function NewTermForm({
   vorschlagId = null,
 }: {
   categories: Category[];
-  existingTerms: Pick<Term, "id" | "slug" | "name">[];
+  existingTerms: TermRef[];
   vorbelegterBegriff?: string;
   vorschlagId?: string | null;
 }) {
@@ -82,7 +45,7 @@ export function NewTermForm({
   const [phaseLabel, setPhaseLabel] = useState("");
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiNotes, setAiNotes] = useState<string[]>([]);
-  const [verdict, setVerdict] = useState<Verdict | null>(null);
+  const [verdict, setVerdict] = useState<ModerationVerdict | null>(null);
   const [checking, setChecking] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -92,36 +55,22 @@ export function NewTermForm({
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const storedDraftJson = useSyncExternalStore(
-    subscribeToStoredDraft,
-    readStoredDraft,
-    storedDraftServerSnapshot
-  );
-
-  const recoverableDraft = useMemo(() => {
-    if (!storedDraftJson) return null;
-    try {
-      const parsed = JSON.parse(storedDraftJson) as TermDraft;
-      return parsed && typeof parsed.name === "string" ? parsed : null;
-    } catch {
-      return null;
-    }
-  }, [storedDraftJson]);
+  const {
+    wiederherstellbar: recoverableDraft,
+    speichern: storeDraft,
+    verwerfen: clearStoredDraft,
+  } = useGespeicherterEntwurf();
 
   useEffect(() => {
     if (step !== "review" || !draft) return;
-    writeStoredDraft(JSON.stringify(draft));
-  }, [draft, step]);
+    storeDraft(draft);
+  }, [draft, step, storeDraft]);
 
   useEffect(() => {
     return () => {
       abortRef.current?.abort();
       setAiBusy(false);
     };
-  }, []);
-
-  const clearStoredDraft = useCallback(() => {
-    writeStoredDraft(null);
   }, []);
 
   function updateDraft(patch: Partial<TermDraft>) {
@@ -167,82 +116,42 @@ export function NewTermForm({
           const data = await res.json();
           if (data?.error) message = data.error;
         } catch {
-      // bewusst ignoriert
-    }
+          // Antwort ohne JSON-Körper – Standardmeldung bleibt.
+        }
         setAiError(message);
         setStep("input");
         return;
       }
 
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      let finished = false;
-
-      while (!finished) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-
-        const lines = buffer.split("\n");
-        buffer = lines.pop() ?? "";
-
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (!trimmed) continue;
-          let event: {
-            type: string;
-            label?: string;
-            progress?: number;
-            error?: string;
-            notes?: string[];
-            draft?: {
-              name: string;
-              slug: string;
-              categoryId: string | null;
-              shortExplanation: string;
-              definition: string;
-              businessRelevance: string;
-              sources: SourceRow[];
-              relatedTermIds: string[];
-            };
-          };
-          try {
-            event = JSON.parse(trimmed);
-          } catch {
-            continue;
+      // Gibt true zurück, sobald Ergebnis oder Fehler da ist.
+      const verarbeite = (roh: unknown): boolean => {
+        const event = roh as EmpfangenesEreignis;
+        if (event.type === "phase") {
+          const { progress } = event;
+          if (typeof progress === "number") {
+            setProgress((prev) => Math.max(prev, progress));
           }
-
-          if (event.type === "phase") {
-            if (typeof event.progress === "number") {
-              setProgress((prev) => Math.max(prev, event.progress!));
-            }
-            if (event.label) setPhaseLabel(event.label);
-          } else if (event.type === "error") {
-            setAiError(
-              event.error ?? "Der KI-Entwurf konnte nicht erstellt werden."
-            );
-            setStep("input");
-            finished = true;
-          } else if (event.type === "result" && event.draft) {
-            const d = event.draft;
-            setDraft({
-              name: d.name,
-              slug: d.slug,
-              categoryId: d.categoryId ?? categories[0]?.id ?? "",
-              shortExplanation: d.shortExplanation,
-              definition: d.definition,
-              businessRelevance: d.businessRelevance,
-              sources: d.sources.length > 0 ? d.sources : [{ ...emptySource }],
-              relatedIds: d.relatedTermIds,
-            });
-            setAiNotes(event.notes ?? []);
-            setSlugTouched(true);
-            setStep("review");
-            finished = true;
-          }
+          if (event.label) setPhaseLabel(event.label);
+          return false;
         }
-      }
+        if (event.type === "error") {
+          setAiError(
+            event.error ?? "Der KI-Entwurf konnte nicht erstellt werden."
+          );
+          setStep("input");
+          return true;
+        }
+        if (event.type === "result" && event.draft) {
+          setDraft(entwurfAusKi(event.draft, categories));
+          setAiNotes(event.notes ?? []);
+          setSlugTouched(true);
+          setStep("review");
+          return true;
+        }
+        return false;
+      };
+
+      const finished = await leseNdjson(res.body, verarbeite);
 
       if (!finished) {
         setAiError(
@@ -277,7 +186,7 @@ export function NewTermForm({
     e.preventDefault();
     if (!draft) return;
 
-    if (!draft.name.trim() || !draft.slug.trim()) {
+    if (!istSpeicherbar(draft)) {
       setSubmitError("Begriff und URL-Slug sind erforderlich.");
       return;
     }
@@ -298,9 +207,9 @@ export function NewTermForm({
         }),
       });
       const data = await res.json();
-      if (res.ok && data.verdict) setVerdict(data.verdict as Verdict);
+      if (res.ok && data.verdict) setVerdict(data.verdict as ModerationVerdict);
     } catch {
-      // bewusst ignoriert
+      // Die Vorprüfung ist optional; ohne sie wird trotzdem gespeichert.
     } finally {
       setChecking(false);
     }
@@ -321,12 +230,7 @@ export function NewTermForm({
     const { data: term, error: termError } = await supabase
       .from("terms")
       .insert({
-        name: draft.name.trim(),
-        slug: draft.slug.trim(),
-        category_id: draft.categoryId || null,
-        short_explanation: draft.shortExplanation.trim() || null,
-        definition: draft.definition.trim() || null,
-        business_relevance: draft.businessRelevance.trim() || null,
+        ...termSpalten(draft),
         status: "published",
         created_by: user.id,
       })
@@ -335,7 +239,7 @@ export function NewTermForm({
 
     if (termError || !term) {
       setSubmitError(
-        termError?.message.includes("duplicate")
+        istDoppelterSlug(termError)
           ? "Ein Begriff mit diesem Slug existiert bereits. Bitte den Slug anpassen."
           : termError?.message ?? "Begriff konnte nicht gespeichert werden."
       );
@@ -343,27 +247,15 @@ export function NewTermForm({
       return;
     }
 
-    const validSources = draft.sources.filter((s) => s.title.trim());
-    if (validSources.length > 0) {
-      await supabase.from("sources").insert(
-        validSources.map((s) => ({
-          term_id: term.id,
-          title: s.title.trim(),
-          authors: s.authors.trim() || null,
-          publisher: s.publisher.trim() || null,
-          year: s.year ? parseInt(s.year, 10) : null,
-          url: s.url.trim() || null,
-        }))
-      );
+    const quellen = quellZeilen(term.id, draft.sources);
+    if (quellen.length > 0) {
+      await supabase.from("sources").insert(quellen);
     }
 
     if (draft.relatedIds.length > 0) {
-      await supabase.from("term_relations").insert(
-        draft.relatedIds.flatMap((relatedId) => [
-          { term_id: term.id, related_term_id: relatedId },
-          { term_id: relatedId, related_term_id: term.id },
-        ])
-      );
+      await supabase
+        .from("term_relations")
+        .insert(relationsPaare(term.id, draft.relatedIds));
     }
 
     if (vorschlagId) {
@@ -445,7 +337,7 @@ export function NewTermForm({
           </label>
 
           {aiError && (
-            <div className="text-sm text-danger bg-danger-soft border border-danger/30 rounded-lg px-4 py-3">
+            <Hinweis as="div">
               <p>{aiError}</p>
               <button
                 type="button"
@@ -454,7 +346,7 @@ export function NewTermForm({
               >
                 Begriff stattdessen manuell anlegen
               </button>
-            </div>
+            </Hinweis>
           )}
 
           <div className="flex flex-wrap items-center gap-3 mt-2">
@@ -479,48 +371,13 @@ export function NewTermForm({
   }
 
   if (step === "generating") {
-    const percent = Math.round(progress * 100);
     return (
-      <div className="panel p-6 flex flex-col gap-5">
-        <h2 className="eyebrow">Schritt 2 von 3 · Recherche läuft</h2>
-
-        <div>
-          <p className="font-semibold mb-1">{keyword}</p>
-          <p className="text-sm text-muted" aria-live="polite">
-            {phaseLabel}
-          </p>
-        </div>
-
-        <div>
-          <div
-            className="h-2.5 w-full rounded-full bg-surface-soft border border-border overflow-hidden"
-            role="progressbar"
-            aria-valuenow={percent}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-label="Fortschritt der KI-Recherche"
-          >
-            <div
-              className="h-full bg-primary rounded-full transition-all duration-500 ease-out"
-              style={{ width: `${percent}%` }}
-            />
-          </div>
-          <p className="text-sm text-muted mt-2">{percent} %</p>
-        </div>
-
-        <p className="text-sm text-muted">
-          Die Websuche dauert je nach Begriff etwa 30 bis 60 Sekunden. Solange
-          die Recherche läuft, wirst du nicht automatisch abgemeldet.
-        </p>
-
-        <button
-          type="button"
-          onClick={cancelGeneration}
-          className="btn btn-quiet self-start"
-        >
-          Abbrechen
-        </button>
-      </div>
+      <RechercheFortschritt
+        begriff={keyword}
+        phase={phaseLabel}
+        fortschritt={progress}
+        onAbbrechen={cancelGeneration}
+      />
     );
   }
 
@@ -570,9 +427,7 @@ export function NewTermForm({
       />
 
       {submitError && (
-        <p className="text-sm text-danger bg-danger-soft border border-danger/30 rounded-lg px-4 py-3">
-          {submitError}
-        </p>
+        <Hinweis>{submitError}</Hinweis>
       )}
 
       <div className="flex flex-wrap items-center gap-3">

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
+import { Hinweis } from "@/components/hinweis";
 
 export function SuggestionForm({ vorbelegt }: { vorbelegt?: string }) {
   const [termName, setTermName] = useState(vorbelegt ?? "");
@@ -146,9 +147,7 @@ export function SuggestionForm({ vorbelegt }: { vorbelegt?: string }) {
       </div>
 
       {error && (
-        <p className="text-sm text-danger bg-danger-soft border border-danger/30 rounded-lg px-4 py-3">
-          {error}
-        </p>
+        <Hinweis>{error}</Hinweis>
       )}
 
       <div className="flex flex-wrap items-center gap-4 pt-1">

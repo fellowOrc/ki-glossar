@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getRolle } from "@/lib/rollen";
-import type { Category, Source, Term } from "@/types/database";
+import type { Category, Source, Term, TermRef } from "@/types/database";
 
 export const revalidate = 0;
 
@@ -26,7 +26,7 @@ async function getTerm(slug: string) {
 
   const relatedIds = (relations ?? []).map((r) => r.related_term_id);
 
-  let related: (Pick<Term, "id" | "slug" | "name"> & {
+  let related: (TermRef & {
     category: { slug: string } | null;
   })[] = [];
   if (relatedIds.length > 0) {

@@ -1,5 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
+import { extractJson } from "@/lib/server/json";
+import { KI_MODELL, textAusAntwort } from "@/lib/server/anthropic";
+import type { ModerationVerdict } from "@/lib/moderation";
 
 export const maxDuration = 30;
 export const dynamic = "force-dynamic";
@@ -7,12 +10,6 @@ export const dynamic = "force-dynamic";
 // Die Einschaetzung blockiert nie, sie legt der Redaktion nur vor. In die
 // Datenbank schreiben darf das Urteil ausschliesslich die Redaktion - die
 // RLS-Policy verbietet Mitgliedern das Setzen dieser Felder.
-
-export type ModerationVerdict = {
-  topic: "ki_bezug" | "unklar" | "themenfremd";
-  concern: "keine" | "pruefen" | "erheblich";
-  reasoning: string;
-};
 
 const FALLBACK: ModerationVerdict = {
   topic: "unklar",
@@ -33,24 +30,6 @@ function asVerdict(value: unknown): ModerationVerdict {
       ? v.reasoning.trim().slice(0, 1200)
       : FALLBACK.reasoning;
   return { topic, concern, reasoning };
-}
-
-function extractJson(text: string): unknown | null {
-  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
-  const candidates = [fenced?.[1], text].filter(
-    (c): c is string => typeof c === "string"
-  );
-  for (const candidate of candidates) {
-    const start = candidate.indexOf("{");
-    const end = candidate.lastIndexOf("}");
-    if (start === -1 || end === -1 || end <= start) continue;
-    try {
-      return JSON.parse(candidate.slice(start, end + 1));
-    } catch {
-      // bewusst ignoriert
-    }
-  }
-  return null;
 }
 
 const SYSTEM_PROMPT = `Du bist die redaktionelle Vorpruefung fuer ein deutschsprachiges KI-Glossar fuer kleine und mittlere Unternehmen. Du entscheidest nichts endgueltig - ein Mensch entscheidet. Liefere eine begruendete Einschaetzung.
@@ -147,7 +126,7 @@ export async function POST(request: Request) {
   let verdict: ModerationVerdict;
   try {
     const message = await anthropic.messages.create({
-      model: "claude-sonnet-4-5",
+      model: KI_MODELL,
       max_tokens: 700,
       system: SYSTEM_PROMPT,
       messages: [
@@ -165,12 +144,7 @@ Relevanz für den Mittelstand: ${businessRelevance || "(leer)"}
       ],
     });
 
-    const text = message.content
-      .filter((b): b is Anthropic.TextBlock => b.type === "text")
-      .map((b) => b.text)
-      .join("\n");
-
-    verdict = asVerdict(extractJson(text));
+    verdict = asVerdict(extractJson(textAusAntwort(message.content)));
   } catch (err) {
     console.error("Prüfung fehlgeschlagen:", err);
     verdict = FALLBACK;

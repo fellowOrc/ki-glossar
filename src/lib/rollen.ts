@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
+import type { Rolle as DbRolle } from "@/types/database";
 
-export type Rolle = "gast" | "member" | "editor" | "admin";
+// Zu den Rollen aus der Datenbank kommt "gast" für nicht angemeldete Besucher.
+export type Rolle = "gast" | DbRolle;
 
 // Massgeblich ist immer die Datenbank. Die Rolle steuert hier nur die Anzeige;
 // durchgesetzt wird sie von den RLS-Policies in Supabase.

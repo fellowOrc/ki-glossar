@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { NewTermForm } from "@/components/new-term-form";
 import { getRolle } from "@/lib/rollen";
-import type { Category, Term } from "@/types/database";
+import type { Category, TermRef } from "@/types/database";
 
 export const metadata = { title: "Neuer Begriff – KI-Glossar" };
 export const dynamic = "force-dynamic";
@@ -12,19 +12,15 @@ export default async function NeuerBegriffPage({
 }: {
   searchParams: Promise<{ begriff?: string; vorschlag?: string }>;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  const { rolle, istRedaktion } = await getRolle();
+  if (rolle === "gast") {
     redirect("/login");
   }
-
-  const { istRedaktion } = await getRolle();
   if (!istRedaktion) {
     redirect("/");
   }
+
+  const supabase = await createClient();
 
   const { begriff, vorschlag } = await searchParams;
 
@@ -46,7 +42,7 @@ export default async function NeuerBegriffPage({
       </p>
       <NewTermForm
         categories={(categories ?? []) as Category[]}
-        existingTerms={(terms ?? []) as Pick<Term, "id" | "slug" | "name">[]}
+        existingTerms={(terms ?? []) as TermRef[]}
         vorbelegterBegriff={begriff ?? ""}
         vorschlagId={vorschlag ?? null}
       />

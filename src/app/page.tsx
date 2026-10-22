@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { TermBrowser } from "@/components/term-browser";
 import type { Category, TermWithCategory } from "@/types/database";
@@ -27,7 +26,7 @@ export default async function HomePage() {
           KI-Begriffe - Verstehen. Einordnen. Anwenden.
         </h1>
         <p className="text-lg text-muted mt-5 max-w-2xl leading-relaxed">
-          Von "Agentic AI" bis "Zero-Shot Learning": {termList.length} zentrale
+          Von &quot;Agentic AI&quot; bis &quot;Zero-Shot Learning&quot;: {termList.length} zentrale
           Begriffe rund um künstliche Intelligenz – Kompakte Erklärungen mit echtem Praxisbezug und vertiefenden Quellen.
         </p>
       </section>

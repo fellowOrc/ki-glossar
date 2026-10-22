@@ -3,23 +3,18 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { Hinweis } from "@/components/hinweis";
+import type { SuggestionStatus } from "@/types/database";
+import { formatDatum } from "@/lib/format";
 
 export type Suggestion = {
   id: string;
   term_name: string;
   note: string | null;
   contact_email: string | null;
-  status: "neu" | "uebernommen" | "abgelehnt";
+  status: SuggestionStatus;
   created_at: string;
 };
-
-function formatDatum(iso: string) {
-  return new Date(iso).toLocaleDateString("de-DE", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-}
 
 export function SuggestionList({
   suggestions,
@@ -34,7 +29,7 @@ export function SuggestionList({
 
   async function setzeStatus(
     s: Suggestion,
-    status: "uebernommen" | "abgelehnt" | "neu"
+    status: SuggestionStatus
   ) {
     setBusyId(s.id);
     setError(null);
@@ -83,9 +78,7 @@ export function SuggestionList({
   return (
     <div className="flex flex-col gap-4">
       {error && (
-        <p className="text-sm text-danger bg-danger-soft border border-danger/30 rounded-lg px-4 py-3">
-          {error}
-        </p>
+        <Hinweis>{error}</Hinweis>
       )}
 
       {suggestions.map((s) => {
