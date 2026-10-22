@@ -1,6 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
 import { slugify } from "@/lib/slugify";
+import { extractJson } from "@/lib/server/json";
+import { KI_MODELL, textAusAntwort } from "@/lib/server/anthropic";
 
 export const maxDuration = 60;
 export const dynamic = "force-dynamic";
@@ -34,25 +36,6 @@ type DraftPayload = {
 
 function encodeEvent(event: ProgressEvent) {
   return new TextEncoder().encode(JSON.stringify(event) + "\n");
-}
-
-function extractJson(text: string): unknown | null {
-  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
-  const candidates = [fenced?.[1], text].filter(
-    (c): c is string => typeof c === "string"
-  );
-
-  for (const candidate of candidates) {
-    const start = candidate.indexOf("{");
-    const end = candidate.lastIndexOf("}");
-    if (start === -1 || end === -1 || end <= start) continue;
-    try {
-      return JSON.parse(candidate.slice(start, end + 1));
-    } catch {
-      // bewusst ignoriert
-    }
-  }
-  return null;
 }
 
 // Claude fuegt bei Websuche-gestuetzten Antworten manchmal automatisch
@@ -172,7 +155,7 @@ BESTEHENDE BEGRIFFE (nur daraus "related_terms" waehlen)
 ${termLines}`;
 
         const anthropicStream = anthropic.messages.stream({
-          model: "claude-sonnet-4-5",
+          model: KI_MODELL,
           max_tokens: 8192,
           system: systemPrompt,
           tools: [
@@ -260,10 +243,7 @@ ${termLines}`;
           }
         }
 
-        const text = finalMessage.content
-          .filter((b): b is Anthropic.TextBlock => b.type === "text")
-          .map((b) => b.text)
-          .join("\n");
+        const text = textAusAntwort(finalMessage.content);
 
         const parsed = extractJson(text);
         if (!parsed || typeof parsed !== "object") {

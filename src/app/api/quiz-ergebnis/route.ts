@@ -1,5 +1,6 @@
-import { createHash } from "node:crypto";
 import { createClient } from "@/lib/supabase/server";
+import { ABSENDER_PRAEFIX, hashAbsender } from "@/lib/server/absender";
+import { istMengenbegrenzung } from "@/lib/server/datenbank-fehler";
 
 export const dynamic = "force-dynamic";
 
@@ -11,17 +12,6 @@ export const dynamic = "force-dynamic";
 // Die Tabelle selbst ist für anonyme Besucher gesperrt. Schreiben und Rechnen
 // übernimmt die Datenbankfunktion quiz_ergebnis_auswerten; die Mengen-
 // begrenzung sitzt als Trigger daneben, weil sie hier umgehbar wäre.
-
-function hashAbsender(request: Request): string | null {
-  const forwarded =
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    request.headers.get("x-real-ip")?.trim();
-  if (!forwarded) return null;
-  return createHash("sha256")
-    .update(`ki-glossar-quiz:${forwarded}`)
-    .digest("hex")
-    .slice(0, 32);
-}
 
 export async function POST(request: Request) {
   let body: { richtige?: unknown; gesamt?: unknown };
@@ -51,11 +41,11 @@ export async function POST(request: Request) {
   const { data, error } = await supabase.rpc("quiz_ergebnis_auswerten", {
     p_richtige: richtige,
     p_gesamt: gesamt,
-    p_ip_hash: hashAbsender(request),
+    p_ip_hash: hashAbsender(request, ABSENDER_PRAEFIX.quiz),
   });
 
   if (error) {
-    if (error.code === "23514" || /zu viele/i.test(error.message)) {
+    if (istMengenbegrenzung(error)) {
       return Response.json(
         {
           error:
