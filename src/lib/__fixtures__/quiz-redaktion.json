@@ -1,0 +1,81 @@
+[
+  {
+    "name": "Large Language Model (LLM)",
+    "text": "Ein Large Language Model ist ein Modell. LLMs verarbeiten Sprache; Language Models sind groß.",
+    "erwartet": "Ein ▉▉▉▉▉ ist ein Modell. ▉▉▉▉▉ verarbeiten Sprache; ▉▉▉▉▉ ▉▉▉▉▉ sind groß.",
+    "formen": [
+      "Large Language Model",
+      "Large",
+      "Language",
+      "Model",
+      "LLM",
+      "Large Language Model (LLM)",
+      "(LLM)"
+    ]
+  },
+  {
+    "name": "KI-Agent",
+    "text": "Ein KI-Agent handelt selbst. Agenten nutzen Werkzeuge, KI ist überall.",
+    "erwartet": "Ein ▉▉▉▉▉ handelt selbst. ▉▉▉▉▉ nutzen Werkzeuge, KI ist überall.",
+    "formen": [
+      "KI-Agent",
+      "Agent"
+    ]
+  },
+  {
+    "name": "Token",
+    "text": "Tokens sind Textbausteine. Ein Token ist kein Tokenizer.",
+    "erwartet": "▉▉▉▉▉ sind Textbausteine. Ein ▉▉▉▉▉ ist kein Tokenizer.",
+    "formen": [
+      "Token"
+    ]
+  },
+  {
+    "name": "Reinforcement Learning",
+    "text": "Reinforcement Learning (auch: Bestärkendes Lernen) belohnt Verhalten. Learning ist zentral.",
+    "erwartet": "▉▉▉▉▉ (auch: ▉▉▉▉▉) belohnt Verhalten. ▉▉▉▉▉ ist zentral.",
+    "formen": [
+      "Reinforcement Learning",
+      "Reinforcement",
+      "Learning"
+    ]
+  },
+  {
+    "name": "Deepfake",
+    "text": "Deepfakes (engl. für tiefgehende Fälschung) täuschen.",
+    "erwartet": "▉▉▉▉▉ (engl.: ▉▉▉▉▉) täuschen.",
+    "formen": [
+      "Deepfake"
+    ]
+  },
+  {
+    "name": "Hard Skill",
+    "text": "Ein Skill, der hart ist: Hard Skills sind messbar.",
+    "erwartet": "Ein ▉▉▉▉▉, der hart ist: ▉▉▉▉▉ sind messbar.",
+    "formen": [
+      "Hard Skill",
+      "Hard",
+      "Skill"
+    ]
+  },
+  {
+    "name": "C++ (Sprache)",
+    "text": "C++ ist schnell. Sprache ist Mittel.",
+    "erwartet": "▉▉▉▉▉ ist schnell. ▉▉▉▉▉ ist Mittel.",
+    "formen": [
+      "C++",
+      "Sprache",
+      "C++ (Sprache)",
+      "(Sprache)"
+    ]
+  },
+  {
+    "name": "AI Act",
+    "text": "Der AI Act regelt AI-Systeme. Act steht für Gesetz.",
+    "erwartet": "Der ▉▉▉▉▉ regelt AI-Systeme. ▉▉▉▉▉ steht für Gesetz.",
+    "formen": [
+      "AI Act",
+      "Act"
+    ]
+  }
+]
