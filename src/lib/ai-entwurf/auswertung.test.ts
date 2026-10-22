@@ -187,11 +187,8 @@ describe("baueEntwurf", () => {
     expect(draft.name).toBe("rag");
     expect(draft.slug).toBe("rag");
     expect(draft.categoryId).toBe("k1");
-    // Charakterisierung: Der Plural lautet bisher „Quellenvorschlage“ (ohne
-    // Umlaut). Das ist ein bekannter Fehler, der bewusst NICHT im Refactoring
-    // korrigiert wird – siehe Fehlerliste.
     expect(notes).toEqual([
-      "2 Quellenvorschlage wurden verworfen, weil die URL nicht aus den Suchtreffern stammte (Schutz vor erfundenen Quellen).",
+      "2 Quellenvorschläge wurden verworfen, weil die URL nicht aus den Suchtreffern stammte (Schutz vor erfundenen Quellen).",
       "Es konnten keine belastbaren Quellen ermittelt werden. Bitte selbst ergänzen.",
     ]);
   });

@@ -123,9 +123,8 @@ export function ordneVerwandteZu(
 }
 
 function hinweisVerworfeneQuellen(anzahl: number): string {
-  return `${anzahl} Quellenvorschlag${anzahl === 1 ? "" : "e"} wurde${
-    anzahl === 1 ? "" : "n"
-  } verworfen, weil die URL nicht aus den Suchtreffern stammte (Schutz vor erfundenen Quellen).`;
+  const vorschlag = anzahl === 1 ? "Quellenvorschlag wurde" : "Quellenvorschläge wurden";
+  return `${anzahl} ${vorschlag} verworfen, weil die URL nicht aus den Suchtreffern stammte (Schutz vor erfundenen Quellen).`;
 }
 
 // Baut aus dem geparsten Modell-JSON den Entwurf und die Hinweise für die
