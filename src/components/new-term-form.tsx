@@ -7,6 +7,7 @@ import { setAiBusy } from "@/lib/ai-busy";
 import { leseNdjson } from "@/lib/ndjson";
 import { useGespeicherterEntwurf } from "@/hooks/use-gespeicherter-entwurf";
 import { TermFields } from "@/components/term-fields";
+import { Hinweis } from "@/components/hinweis";
 import { RechercheFortschritt } from "@/components/recherche-fortschritt";
 import {
   entwurfAusKi,
@@ -336,7 +337,7 @@ export function NewTermForm({
           </label>
 
           {aiError && (
-            <div className="text-sm text-danger bg-danger-soft border border-danger/30 rounded-lg px-4 py-3">
+            <Hinweis as="div">
               <p>{aiError}</p>
               <button
                 type="button"
@@ -345,7 +346,7 @@ export function NewTermForm({
               >
                 Begriff stattdessen manuell anlegen
               </button>
-            </div>
+            </Hinweis>
           )}
 
           <div className="flex flex-wrap items-center gap-3 mt-2">
@@ -426,9 +427,7 @@ export function NewTermForm({
       />
 
       {submitError && (
-        <p className="text-sm text-danger bg-danger-soft border border-danger/30 rounded-lg px-4 py-3">
-          {submitError}
-        </p>
+        <Hinweis>{submitError}</Hinweis>
       )}
 
       <div className="flex flex-wrap items-center gap-3">

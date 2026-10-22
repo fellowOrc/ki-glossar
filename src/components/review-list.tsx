@@ -4,7 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { Hinweis } from "@/components/hinweis";
 import type { ModerationStatus } from "@/types/database";
+import { formatDatum } from "@/lib/format";
 
 export type ReviewTerm = {
   id: string;
@@ -98,9 +100,7 @@ export function ReviewList({
   return (
     <div className="flex flex-col gap-4">
       {error && (
-        <p className="text-sm text-danger bg-danger-soft border border-danger/30 rounded-lg px-4 py-3">
-          {error}
-        </p>
+        <Hinweis>{error}</Hinweis>
       )}
 
       {terms.map((term) => {
@@ -119,11 +119,7 @@ export function ReviewList({
                     ? (authorEmails[term.created_by] ?? "unbekannt")
                     : "unbekannt"}
                   {" · "}
-                  {new Date(term.created_at).toLocaleDateString("de-DE", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                  })}
+                  {formatDatum(term.created_at)}
                 </p>
               </div>
               <StatusBadge status={term.moderation_status} />

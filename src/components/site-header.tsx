@@ -1,15 +1,10 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
 import { getRolle } from "@/lib/rollen";
 import { HeaderNav } from "@/components/header-nav";
 
 export async function SiteHeader() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const { istRedaktion } = await getRolle();
+  // Eine Abfrage für Anmeldung und Rolle (vorher zwei getUser-Aufrufe).
+  const { userId, istRedaktion } = await getRolle();
 
   return (
     <header className="bg-surface border-b border-border sticky top-0 z-40">
@@ -32,7 +27,7 @@ export async function SiteHeader() {
             </span>
           </Link>
 
-          <HeaderNav eingeloggt={!!user} istRedaktion={istRedaktion} />
+          <HeaderNav eingeloggt={userId !== null} istRedaktion={istRedaktion} />
         </div>
       </div>
     </header>

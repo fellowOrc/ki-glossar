@@ -12,19 +12,15 @@ export default async function NeuerBegriffPage({
 }: {
   searchParams: Promise<{ begriff?: string; vorschlag?: string }>;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  const { rolle, istRedaktion } = await getRolle();
+  if (rolle === "gast") {
     redirect("/login");
   }
-
-  const { istRedaktion } = await getRolle();
   if (!istRedaktion) {
     redirect("/");
   }
+
+  const supabase = await createClient();
 
   const { begriff, vorschlag } = await searchParams;
 

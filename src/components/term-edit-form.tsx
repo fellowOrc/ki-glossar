@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { TermFields } from "@/components/term-fields";
+import { Hinweis } from "@/components/hinweis";
 import {
   istDoppelterSlug,
   istSpeicherbar,
@@ -189,14 +190,10 @@ export function TermEditForm({
         />
 
         {error && (
-          <p className="text-sm text-danger bg-danger-soft border border-danger/30 rounded-lg px-4 py-3">
-            {error}
-          </p>
+          <Hinweis>{error}</Hinweis>
         )}
         {hinweis && (
-          <p className="text-sm text-primary bg-primary-soft border border-primary/30 rounded-lg px-4 py-3">
-            {hinweis}
-          </p>
+          <Hinweis art="erfolg">{hinweis}</Hinweis>
         )}
 
         <div className="flex flex-wrap items-center gap-3">
