@@ -1,17 +1,13 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  useSyncExternalStore,
-} from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { setAiBusy } from "@/lib/ai-busy";
+import { leseNdjson } from "@/lib/ndjson";
+import { useGespeicherterEntwurf } from "@/hooks/use-gespeicherter-entwurf";
 import { TermFields } from "@/components/term-fields";
+import { RechercheFortschritt } from "@/components/recherche-fortschritt";
 import {
   entwurfAusKi,
   istDoppelterSlug,
@@ -20,47 +16,13 @@ import {
   quellZeilen,
   relationsPaare,
   termSpalten,
-  type SourceRow,
   type TermDraft,
 } from "@/lib/term-draft";
+import type { EmpfangenesEreignis } from "@/lib/ai-entwurf/typen";
 import type { ModerationVerdict } from "@/lib/moderation";
 import type { Category, TermRef } from "@/types/database";
 
 type Step = "input" | "generating" | "review";
-
-const DRAFT_STORAGE_KEY = "ki-glossar:entwurf";
-const DRAFT_CHANGED_EVENT = "ki-glossar:entwurf-geaendert";
-
-function subscribeToStoredDraft(onChange: () => void) {
-  window.addEventListener(DRAFT_CHANGED_EVENT, onChange);
-  window.addEventListener("storage", onChange);
-  return () => {
-    window.removeEventListener(DRAFT_CHANGED_EVENT, onChange);
-    window.removeEventListener("storage", onChange);
-  };
-}
-
-function readStoredDraft(): string | null {
-  try {
-    return sessionStorage.getItem(DRAFT_STORAGE_KEY);
-  } catch {
-    return null;
-  }
-}
-
-function storedDraftServerSnapshot(): string | null {
-  return null;
-}
-
-function writeStoredDraft(value: string | null) {
-  try {
-    if (value === null) sessionStorage.removeItem(DRAFT_STORAGE_KEY);
-    else sessionStorage.setItem(DRAFT_STORAGE_KEY, value);
-  } catch {
-      // bewusst ignoriert
-    }
-  window.dispatchEvent(new Event(DRAFT_CHANGED_EVENT));
-}
 
 export function NewTermForm({
   categories,
@@ -92,36 +54,22 @@ export function NewTermForm({
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const storedDraftJson = useSyncExternalStore(
-    subscribeToStoredDraft,
-    readStoredDraft,
-    storedDraftServerSnapshot
-  );
-
-  const recoverableDraft = useMemo(() => {
-    if (!storedDraftJson) return null;
-    try {
-      const parsed = JSON.parse(storedDraftJson) as TermDraft;
-      return parsed && typeof parsed.name === "string" ? parsed : null;
-    } catch {
-      return null;
-    }
-  }, [storedDraftJson]);
+  const {
+    wiederherstellbar: recoverableDraft,
+    speichern: storeDraft,
+    verwerfen: clearStoredDraft,
+  } = useGespeicherterEntwurf();
 
   useEffect(() => {
     if (step !== "review" || !draft) return;
-    writeStoredDraft(JSON.stringify(draft));
-  }, [draft, step]);
+    storeDraft(draft);
+  }, [draft, step, storeDraft]);
 
   useEffect(() => {
     return () => {
       abortRef.current?.abort();
       setAiBusy(false);
     };
-  }, []);
-
-  const clearStoredDraft = useCallback(() => {
-    writeStoredDraft(null);
   }, []);
 
   function updateDraft(patch: Partial<TermDraft>) {
@@ -167,72 +115,42 @@ export function NewTermForm({
           const data = await res.json();
           if (data?.error) message = data.error;
         } catch {
-      // bewusst ignoriert
-    }
+          // Antwort ohne JSON-Körper – Standardmeldung bleibt.
+        }
         setAiError(message);
         setStep("input");
         return;
       }
 
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      let finished = false;
-
-      while (!finished) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-
-        const lines = buffer.split("\n");
-        buffer = lines.pop() ?? "";
-
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (!trimmed) continue;
-          let event: {
-            type: string;
-            label?: string;
-            progress?: number;
-            error?: string;
-            notes?: string[];
-            draft?: {
-              name: string;
-              slug: string;
-              categoryId: string | null;
-              shortExplanation: string;
-              definition: string;
-              businessRelevance: string;
-              sources: SourceRow[];
-              relatedTermIds: string[];
-            };
-          };
-          try {
-            event = JSON.parse(trimmed);
-          } catch {
-            continue;
+      // Gibt true zurück, sobald Ergebnis oder Fehler da ist.
+      const verarbeite = (roh: unknown): boolean => {
+        const event = roh as EmpfangenesEreignis;
+        if (event.type === "phase") {
+          const { progress } = event;
+          if (typeof progress === "number") {
+            setProgress((prev) => Math.max(prev, progress));
           }
-
-          if (event.type === "phase") {
-            if (typeof event.progress === "number") {
-              setProgress((prev) => Math.max(prev, event.progress!));
-            }
-            if (event.label) setPhaseLabel(event.label);
-          } else if (event.type === "error") {
-            setAiError(
-              event.error ?? "Der KI-Entwurf konnte nicht erstellt werden."
-            );
-            setStep("input");
-            finished = true;
-          } else if (event.type === "result" && event.draft) {
-            setDraft(entwurfAusKi(event.draft, categories));
-            setAiNotes(event.notes ?? []);
-            setSlugTouched(true);
-            setStep("review");
-            finished = true;
-          }
+          if (event.label) setPhaseLabel(event.label);
+          return false;
         }
-      }
+        if (event.type === "error") {
+          setAiError(
+            event.error ?? "Der KI-Entwurf konnte nicht erstellt werden."
+          );
+          setStep("input");
+          return true;
+        }
+        if (event.type === "result" && event.draft) {
+          setDraft(entwurfAusKi(event.draft, categories));
+          setAiNotes(event.notes ?? []);
+          setSlugTouched(true);
+          setStep("review");
+          return true;
+        }
+        return false;
+      };
+
+      const finished = await leseNdjson(res.body, verarbeite);
 
       if (!finished) {
         setAiError(
@@ -290,7 +208,7 @@ export function NewTermForm({
       const data = await res.json();
       if (res.ok && data.verdict) setVerdict(data.verdict as ModerationVerdict);
     } catch {
-      // bewusst ignoriert
+      // Die Vorprüfung ist optional; ohne sie wird trotzdem gespeichert.
     } finally {
       setChecking(false);
     }
@@ -452,48 +370,13 @@ export function NewTermForm({
   }
 
   if (step === "generating") {
-    const percent = Math.round(progress * 100);
     return (
-      <div className="panel p-6 flex flex-col gap-5">
-        <h2 className="eyebrow">Schritt 2 von 3 · Recherche läuft</h2>
-
-        <div>
-          <p className="font-semibold mb-1">{keyword}</p>
-          <p className="text-sm text-muted" aria-live="polite">
-            {phaseLabel}
-          </p>
-        </div>
-
-        <div>
-          <div
-            className="h-2.5 w-full rounded-full bg-surface-soft border border-border overflow-hidden"
-            role="progressbar"
-            aria-valuenow={percent}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-label="Fortschritt der KI-Recherche"
-          >
-            <div
-              className="h-full bg-primary rounded-full transition-all duration-500 ease-out"
-              style={{ width: `${percent}%` }}
-            />
-          </div>
-          <p className="text-sm text-muted mt-2">{percent} %</p>
-        </div>
-
-        <p className="text-sm text-muted">
-          Die Websuche dauert je nach Begriff etwa 30 bis 60 Sekunden. Solange
-          die Recherche läuft, wirst du nicht automatisch abgemeldet.
-        </p>
-
-        <button
-          type="button"
-          onClick={cancelGeneration}
-          className="btn btn-quiet self-start"
-        >
-          Abbrechen
-        </button>
-      </div>
+      <RechercheFortschritt
+        begriff={keyword}
+        phase={phaseLabel}
+        fortschritt={progress}
+        onAbbrechen={cancelGeneration}
+      />
     );
   }
 

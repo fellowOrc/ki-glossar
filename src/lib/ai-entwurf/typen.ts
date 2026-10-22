@@ -25,3 +25,14 @@ export type ProgressEvent =
   | { type: "phase"; label: string; progress: number }
   | { type: "result"; draft: DraftPayload; notes: string[] }
   | { type: "error"; error: string };
+
+// So kommt ein Ereignis beim Client an: ungeprüftes JSON, bei dem jedes Feld
+// fehlen kann. Der Client prüft daher jedes Feld, bevor er es nutzt.
+export type EmpfangenesEreignis = {
+  type?: string;
+  label?: string;
+  progress?: number;
+  error?: string;
+  notes?: string[];
+  draft?: DraftPayload;
+};
