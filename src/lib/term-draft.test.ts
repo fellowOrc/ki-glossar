@@ -6,8 +6,8 @@ import {
   istDoppelterSlug,
   istSpeicherbar,
   leererEntwurf,
-  quellZeilen,
-  relationsPaare,
+  quellDaten,
+  speicherParameter,
   termSpalten,
   type TermDraft,
 } from "@/lib/term-draft";
@@ -107,9 +107,8 @@ describe("Speicher-Mapping", () => {
   });
 
   it("übergeht Quellen ohne Titel und wandelt das Jahr in eine Zahl", () => {
-    expect(quellZeilen("t", draft.sources)).toEqual([
+    expect(quellDaten(draft.sources)).toEqual([
       {
-        term_id: "t",
         title: "Paper",
         authors: null,
         publisher: "ACL",
@@ -119,13 +118,24 @@ describe("Speicher-Mapping", () => {
     ]);
   });
 
-  it("speichert Verknüpfungen in beide Richtungen", () => {
-    expect(relationsPaare("t", ["r1", "r2"])).toEqual([
-      { term_id: "t", related_term_id: "r1" },
-      { term_id: "r1", related_term_id: "t" },
-      { term_id: "t", related_term_id: "r2" },
-      { term_id: "r2", related_term_id: "t" },
-    ]);
+  it("baut die Argumente für begriff_speichern", () => {
+    expect(
+      speicherParameter(draft, {
+        termId: null,
+        status: "published",
+        vorschlagId: "v1",
+      })
+    ).toEqual({
+      p_term_id: null,
+      p_daten: termSpalten(draft),
+      p_status: "published",
+      p_quellen: quellDaten(draft.sources),
+      p_verwandte: ["r1", "r2"],
+      p_vorschlag_id: "v1",
+    });
+    expect(
+      speicherParameter(draft, { termId: "t", status: null }).p_vorschlag_id
+    ).toBeNull();
   });
 
   it("prüft Pflichtfelder und erkennt doppelte Slugs", () => {

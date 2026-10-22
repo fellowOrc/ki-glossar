@@ -10,9 +10,7 @@ import { LoeschenMitRueckfrage } from "@/components/loeschen-mit-rueckfrage";
 import {
   istDoppelterSlug,
   istSpeicherbar,
-  quellZeilen,
-  relationsPaare,
-  termSpalten,
+  speicherParameter,
   type TermDraft,
 } from "@/lib/term-draft";
 import type { Category, TermRef, TermStatus } from "@/types/database";
@@ -58,43 +56,21 @@ export function TermEditForm({
 
     const supabase = createClient();
 
-    const { error: termError } = await supabase
-      .from("terms")
-      .update({
-        ...termSpalten(draft),
-        ...(neuerStatus ? { status: neuerStatus } : {}),
-      })
-      .eq("id", termId);
+    // Begriff, Quellen und Verknüpfungen in einer Transaktion: Scheitert ein
+    // Teil, bleibt der gespeicherte Stand vollständig erhalten.
+    const { error: speicherFehler } = await supabase.rpc(
+      "begriff_speichern",
+      speicherParameter(draft, { termId, status: neuerStatus ?? null })
+    );
 
-    if (termError) {
+    if (speicherFehler) {
       setError(
-        istDoppelterSlug(termError)
+        istDoppelterSlug(speicherFehler)
           ? "Ein anderer Begriff nutzt diesen Slug bereits."
-          : termError.message
+          : `Nichts gespeichert: ${speicherFehler.message}`
       );
       setBusy(null);
       return;
-    }
-
-    await supabase.from("sources").delete().eq("term_id", termId);
-    const gueltigeQuellen = quellZeilen(termId, draft.sources);
-    if (gueltigeQuellen.length > 0) {
-      const { error: quellenFehler } = await supabase
-        .from("sources")
-        .insert(gueltigeQuellen);
-      if (quellenFehler) {
-        setError(`Quellen konnten nicht gespeichert werden: ${quellenFehler.message}`);
-        setBusy(null);
-        return;
-      }
-    }
-
-    await supabase.from("term_relations").delete().eq("term_id", termId);
-    await supabase.from("term_relations").delete().eq("related_term_id", termId);
-    if (draft.relatedIds.length > 0) {
-      await supabase
-        .from("term_relations")
-        .insert(relationsPaare(termId, draft.relatedIds));
     }
 
     setBusy(null);

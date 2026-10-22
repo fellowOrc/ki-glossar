@@ -1,6 +1,6 @@
 import { slugify } from "@/lib/slugify";
 import type { DraftPayload } from "@/lib/ai-entwurf/typen";
-import type { Category } from "@/types/database";
+import type { Category, TermStatus } from "@/types/database";
 
 // Der Formularzustand eines Glossareintrags und die Übersetzung von und zu
 // den Datenbankzeilen. Anlegen und Bearbeiten nutzen dieselben Funktionen,
@@ -124,12 +124,11 @@ export function termSpalten(draft: TermDraft) {
   };
 }
 
-// Zeilen der Tabelle sources; Quellen ohne Titel werden übergangen.
-export function quellZeilen(termId: string, sources: SourceRow[]) {
+// Quellen für die Tabelle sources; Quellen ohne Titel werden übergangen.
+export function quellDaten(sources: SourceRow[]) {
   return sources
     .filter((s) => s.title.trim())
     .map((s) => ({
-      term_id: termId,
       title: s.title.trim(),
       authors: s.authors.trim() || null,
       publisher: s.publisher.trim() || null,
@@ -138,12 +137,26 @@ export function quellZeilen(termId: string, sources: SourceRow[]) {
     }));
 }
 
-// Verknüpfungen werden in beide Richtungen gespeichert.
-export function relationsPaare(termId: string, relatedIds: string[]) {
-  return relatedIds.flatMap((relatedId) => [
-    { term_id: termId, related_term_id: relatedId },
-    { term_id: relatedId, related_term_id: termId },
-  ]);
+// Argumente für die Datenbankfunktion begriff_speichern, die Begriff,
+// Quellen und Verknüpfungen in einer Transaktion schreibt
+// (supabase/migrations/20261022_begriff_speichern.sql).
+// termId null = neu anlegen; status null = beim Bearbeiten unverändert.
+export function speicherParameter(
+  draft: TermDraft,
+  optionen: {
+    termId: string | null;
+    status: TermStatus | null;
+    vorschlagId?: string | null;
+  }
+) {
+  return {
+    p_term_id: optionen.termId,
+    p_daten: termSpalten(draft),
+    p_status: optionen.status,
+    p_quellen: quellDaten(draft.sources),
+    p_verwandte: draft.relatedIds,
+    p_vorschlag_id: optionen.vorschlagId ?? null,
+  };
 }
 
 // Supabase meldet einen doppelten Slug als Unique-Verletzung („duplicate key“).

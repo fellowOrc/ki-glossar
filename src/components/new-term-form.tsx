@@ -14,9 +14,7 @@ import {
   istDoppelterSlug,
   istSpeicherbar,
   leererEntwurf,
-  quellZeilen,
-  relationsPaare,
-  termSpalten,
+  speicherParameter,
   type TermDraft,
 } from "@/lib/term-draft";
 import type { EmpfangenesEreignis } from "@/lib/ai-entwurf/typen";
@@ -227,51 +225,32 @@ export function NewTermForm({
       return;
     }
 
-    const { data: term, error: termError } = await supabase
-      .from("terms")
-      .insert({
-        ...termSpalten(draft),
+    // Begriff, Quellen, Verknüpfungen und Vorschlagsstatus in einer
+    // Transaktion: Scheitert ein Teil, wird nichts gespeichert und der
+    // Entwurf bleibt zum erneuten Versuch erhalten.
+    const { data, error } = await supabase.rpc(
+      "begriff_speichern",
+      speicherParameter(draft, {
+        termId: null,
         status: "published",
-        created_by: user.id,
+        vorschlagId,
       })
-      .select()
-      .single();
+    );
+    const gespeichert = data as { id: string; slug: string } | null;
 
-    if (termError || !term) {
+    if (error || !gespeichert) {
       setSubmitError(
-        istDoppelterSlug(termError)
+        istDoppelterSlug(error)
           ? "Ein Begriff mit diesem Slug existiert bereits. Bitte den Slug anpassen."
-          : termError?.message ?? "Begriff konnte nicht gespeichert werden."
+          : `Nichts gespeichert: ${error?.message ?? "unbekannter Fehler"}. Der Entwurf bleibt erhalten.`
       );
       setSubmitLoading(false);
       return;
     }
 
-    const quellen = quellZeilen(term.id, draft.sources);
-    if (quellen.length > 0) {
-      await supabase.from("sources").insert(quellen);
-    }
-
-    if (draft.relatedIds.length > 0) {
-      await supabase
-        .from("term_relations")
-        .insert(relationsPaare(term.id, draft.relatedIds));
-    }
-
-    if (vorschlagId) {
-      await supabase
-        .from("suggestions")
-        .update({
-          status: "uebernommen",
-          handled_at: new Date().toISOString(),
-          handled_by: user.id,
-        })
-        .eq("id", vorschlagId);
-    }
-
     clearStoredDraft();
     setSubmitLoading(false);
-    router.push(`/begriff/${term.slug}`);
+    router.push(`/begriff/${gespeichert.slug}`);
     router.refresh();
   }
 
